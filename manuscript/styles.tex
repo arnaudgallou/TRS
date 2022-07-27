@@ -1,0 +1,26 @@
+% font
+\usepackage[sfdefault,light]{roboto}
+
+% line numbers
+\usepackage{lineno}
+\linenumbers
+
+% captions
+\usepackage{caption, setspace}
+\DeclareCaptionLabelFormat{fig}{
+  \textbf{#1 #2.}
+}
+\DeclareCaptionLabelFormat{tbl}{
+  \textbf{#2 #2.}
+}
+\captionsetup[figure]{
+  labelformat=fig
+}
+\captionsetup[table]{
+  labelformat=tbl
+}
+\captionsetup{
+  font={stretch=1.25},
+  labelsep=space,
+  format=plain
+}

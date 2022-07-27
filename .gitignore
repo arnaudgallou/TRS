@@ -1,0 +1,19 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+
+.gs.R
+notes.txt
+
+data/*
+!data/README.md
+
+gis/
+manuscript/**/main_text_files/
+manuscript/appendix/
+manuscript/images/
+manuscript/main text/main_text.tex
+
+*.csl

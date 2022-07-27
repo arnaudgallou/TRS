@@ -1,0 +1,51 @@
+```{r}
+#| label: init
+#| include: false
+
+.__init__()
+
+####  Imports  ####
+  {
+    library(chalkr)
+    source("manuscript/helpers.R")
+  }
+
+####  Theme  ####
+  {
+    theme_update(strip.text = element_blank())
+  }
+
+####  Closures  ####
+  {
+    trs_global <- global_analyses(PATH_GLOBAL)
+    trs_local <- local_analyses(PATH_LOCAL)
+  }
+
+####  Data info  ####
+  {
+    trs_raw <- read_csv("data/trs_raw.csv")
+    
+    data_info <- list(
+      n_data_raw = get_n_data(trs_raw),
+      n_data = get_n_data(trs),
+      n_locations_raw = get_n_location(trs_raw),
+      n_locations = get_n_location(trs),
+      n_locations_global = get_n_location(trs, min_elev_span = ELEV_SPAN_DEFAULT),
+      n_islands = get_n_location(trs, land_type = "island"),
+      n_continents = get_n_location(trs, land_type = "continent")
+    )
+  }
+
+####  Authors  ####
+  {
+    df_authors <- googlesheets4::read_sheet(GS_AUTHORS)
+    
+    authors <- Authors$new(df_authors, options = list(
+      affiliation_sep = " :: ",
+      tidy = TRUE,
+      initial_full_stop = TRUE
+    ))
+    
+    authors$set_correspendence("gallou")
+  }
+```

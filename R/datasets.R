@@ -90,8 +90,8 @@
             original_name = paste(
               genus %>% if_else(!is.na(.) & mean(. != first_word(original_name)) > .5, ., ""),
               original_name,
-              infraspecies %>% if_else(is.na(.), "", .),
-              authority %>% if_else(is.na(.), "", .)
+              replace_na(infraspecies, ""),
+              replace_na(authority, "")
             ) %>%
               string_clean() %>%
               uc_first()
@@ -148,7 +148,7 @@
             sp_mean = (sp_min + sp_max) / 2,
             sp_range = sp_max - sp_min,
             elev_band = round_nearest(sp_mean, -ELEV_BIN_WIDTH),
-            land_type = if_else(is.na(land_type), "continent", land_type)
+            land_type = replace_na(land_type, "continent")
           ) %>%
           group_by(id_ref) %>%
           mutate(

@@ -1,0 +1,118 @@
+---
+crossref:
+  eq-prefix: eq.
+  ref-hyperlink: false
+---
+
+```{r}
+mdl_data <- compile_mdl_data(
+  trs,
+  clim_data = trs_bioclim,
+  elevation_span = ELEV_SPAN_DEFAULT,
+  exclusion_zone = EXCL_DEFAULT,
+  singleton_thr = SINGLETON_THR,
+  std_elev_grad = TRUE,
+  average = TRUE,
+  std_from = "top",
+  cols = c("ap", "ts", "mat")
+)
+
+cor_ap_ts <- cor(mdl_data$data$ap, mdl_data$data$ts)
+cor_mat_ts <- cor(mdl_data$data$mat, mdl_data$data$ts)
+```
+
+### Methods
+
+[Plant data]{.underline}
+
+We compiled a global dataset of vascular plant species with elevational ranges from published and unpublished data (online repositories, checklists, floras as well as private and museum collections), including more than `r data_info$n_data_raw` species' elevational ranges in `r data_info$n_locations_raw` mountains, defined as mountainous areas, countries, islands, mountain ranges or volcanoes. We restricted our search to elevational gradient length ≥ `r ELEV_SPANS[1]` m and mountain regions spanning less than 1000 km along a North-South and East-West axis, for which range size data were given explicitly for the relevant mountain areas. The elevational ranges were directly provided for every species as a minimum and maximum elevation in all but Mt. Kilimanjaro, Mt. Etna and Switzerland datasets, for which elevation ranges were computed from occurrence records. Species range sizes in Switzerland were computed from GBIF observations between 1980 and 2021 (see Table S[-@tbl-refs] and references for details) that we curated using the CoordinateCleaner package version `r VERSION_COORDINATE_CLEANER` [@zizka2019] to remove species around the GBIF headquarters, institutions, capital, centroids, outliers, species that fall into the ocean, zeros and absolute latitude and longitude. We defined the elevational range of species as the difference between the maximum and minimum reported observation in each elevational gradient.
+
+We implemented several steps to homogenize the data and reduce biases related to dissimilarities in sampling intensity among elevational gradients. First, we discarded mountains with discontinuous sampling, defined as one or more gaps \> 500 m between two sampled sections within the same elevational gradient. Second, we calculated the percentage of singletons --- i.e. species with only one observation and a consequent elevational range of 0 m --- in each dataset to assess the sampling effort for every elevational gradient. A high proportion of singletons might reflect a poor sampling effort and would result in highly underestimated species' range sizes. We retained mountains with ≤ `r SINGLETON_THR`% singletons, which provided a compromise between the number of elevational gradients and the variance in sampling intensity in the data. Third, we removed a total of 38 observations with obviously incorrect elevation values, e.g. species with a minimum elevation greater than the maximum elevation or with an elevation higher than 6500 m, corresponding to the highest elevation recorded for vascular plants [@dentant2018]. These erroneous data were present in the original source and probably resulted from typographic errors, such as additional digits in elevation values. Finally, we standardized taxon names to the species level using GBIF's species name matching tool [@species]. Taxa that could not be identified to the species level were discarded. The final dataset consisted of more than `r data_info$n_data` range size data and `r data_info$n_locations` elevational gradients.
+
+[Climate data]{.underline}
+
+We used global climate data from CHELSA [@karger2017; @karger2018] with a spatial resolution of 30", covering the period between 1979 and 2013, to investigate the response of species' elevational range sizes to diurnal temperature range (DTR, bio2) and temperature seasonality (TS, bio4), defined as the mean diurnal range of temperatures averaged over one year and standard deviation of the monthly mean temperatures, respectively. Additionally, we used the mean annual temperature (MAT; bio1) and annual precipitation (AP; bio12) to explore the interacting influence of MAT and AP with temperature variability on range sizes. We computed the mean bioclimate value for each mountain in `r ELEV_BIN_WIDTH` m elevation bands that we generated from SRTM rasters (1 arc-sec resolution) covering the studied mountain area. We downloaded SRTM files from the U.S. Geological Survey [@earthexp].
+
+To examine the influence of temperature variability in the last 2000 years (∆MAT~0-1980~) on species' ranges, we generated a time series of global annual mean temperature between 0 to 1980 (AD) using the PaleoView software version `r VERSION_PALEOVIEW` [@fordham2017], which provides reconstructions of past climate at high temporal resolutions. The time series was generated using 30-year intervals taken in 30 year steps and the bias correction turned off. We defined ∆MAT~0-1980~ as the difference between the highest and lowest mean annual temperature values in the time series in each mountain gradient. Because the spatial resolution of the simulated past climate data (2.5 x 2.5°) was too low to conduct analyses along elevation, we extracted ∆MAT~0-1980~ values independently of the elevation (i.e. one ∆MAT~0-1980~ value per elevational gradient).
+
+{{< pagebreak >}}
+
+[Statistical analyses]{.underline}
+
+We investigated the effect of temperature variability on species' elevational ranges with two Bayesian models. First, we asked how temperature variability predicts mean elevational ranges of vascular plants within an elevation gradient at the global scale, using diurnal, seasonal and temperature variation from 0 and 1980 (AD). Then, we assessed how DTR and TS predict species' elevational ranges at a local scale along each elevational gradient. To have the data meet normal distribution assumptions, we set a range size of 10 m --- corresponding to the smallest species' elevational range in our dataset --- to all singletons and applied a natural log transformation.
+
+[Global-scale analyses]{.underline}
+
+To test the overall influence of temperature variability on species' elevational ranges, we fit models predicting the response of mean species' ranges to DTR, TS and ∆MAT~0-1980~ across each elevational gradient. Additionally, we ran models to test the AP:DTR, MAT:DTR and MAP~0-1980~:∆MAT~0-1980~ interactions on mean species' range sizes. We did not test the AP:TS or MAT:TS interactions because of their strong correlation (`r round(cor_ap_ts, 2)` and `r round(cor_mat_ts, 2)`, respectively).
+
+Mountain gradients in the dataset varied between `r ELEV_SPANS[1]` and `r max(trs$elev_span)` m. Such disparities in the length of elevational gradients can directly influence species' range sizes. For instance, a short gradient in elevation is more likely to display narrow species' ranges, simply because species are more strongly constrained by the upper and lower limits of the elevational gradient. Similarly, we would expect to observe narrower species' ranges toward the ends of the elevational gradients because the physical barriers created by the domain limits will stop species from expanding beyond the domain's boundaries (or will truncate species' range if the sampled gradients does not cover the full elevational gradients). As a result, species thriving close to the edges of the elevational gradients are likely to be truncated and display a fraction of their potential range [@grytnes2002].
+
+To reduce biases related to the length and limits of elevational gradients, we standardized the length of each elevational gradient by retaining a set of elevational ranges at the top of each mountain gradient and deleting the rest. For example, for a standardized elevational gradient length of 2000 m, an original elevational gradient running from 0 to 5100 m a.s.l. would be converted into an elevational gradient going from 3100 to 5100 m a.s.l.. This approach ensures comparability between elevational gradients. We truncated species' elevational ranges crossing the lower end of the standardized elevational gradients, keeping the parts of the species' ranges within the gradient's boundaries only. Species whose distribution range was entirely outside the standardized mountain gradient limits were discarded from the analyses. To minimize the influence of truncated species at the elevational gradient edges on the analyses, we excluded species found exclusively near the top and bottom of each elevational gradient using an exclusion zone.
+
+To assess the sensitivity of the model outputs to these methodological choices, we ran each model using standardized gradient lengths of `r enumerate(ELEV_SPANS)` m, and exclusion zones of `r enumerate(EXCLS)` m. We also repeated analyses with elevational gradients standardized from the bottom of the mountain gradient (rather than the top). These parallel analyses produced qualitatively similar results for gradient lengths varying from `r enumerate(ELEV_SPANS[c(1, 3)])` m (Fig. S[-@fig-spaghetti_all_1]-[-@fig-posterior_distributions]). Longer standardized elevational gradients would discard too many mountains, thereby limiting the reliability of the model estimates. For the results presented in the main text, we used standardized gradients of `r ELEV_SPAN_DEFAULT` m (n = `r data_info$n_locations_global`) and exclusion zones of `r EXCL_DEFAULT` m as these values provided a good compromise between the number of elevational gradients to fit the model and species range data to estimate the average elevational range in each vertical gradient.
+
+The Bayesian hierarchical models [@hooten2015] first estimated the mean elevation range of species within each mountain, and then fit linear models of mean range sizes by mean climate of the range with:
+
+$$
+RS \sim N(\mu_{RS}, \sigma^2_{RS})
+$$ {#eq-global_rs}
+
+$$
+\mu_{RS} = \alpha_{site}[site]
+$$ {#eq-global_mu_rs}
+
+$$
+\sigma^2_{RS} \sim \Gamma(10^{-3}, 10^{-3})
+$$ {#eq-global_sigma_rs}
+
+$$
+\alpha_{site} \sim N(\mu_{site}, \sigma^2_{site})
+$$ {#eq-global_alpha_site}
+
+$$
+\mu_{site} = \alpha_V + \beta_V * V_{site}
+$$ {#eq-global_mu_site}
+
+$$
+\alpha_V \sim N(0, 10^{-6})
+$$ {#eq-global_alpha_v}
+
+$$
+\beta_V \sim N(0, 10^{-6})
+$$ {#eq-global_beta_v}
+
+$$
+\sigma^2_{site} \sim \Gamma(10^{-3}, 10^{-3})
+$$ {#eq-global_sigma_site}
+
+Where species range size ($RS$) is a normally distributed random variable (with mean, $\mu$, and variance, $\sigma^2$; @eq-global_rs) summarized with mountain (site) specific means and variances with $\alpha_{site}$ (@eq-global_mu_rs). @Eq-global_sigma_rs is a gamma prior for the variance in species range sizes in @eq-global_rs. The uncertainty in $\alpha_{site}$ is propagated through to @eq-global_alpha_site and @eq-global_mu_site, which models the relationship between mean range size of species within a mountain ($\mu_{site}$) and a given climate variable $V$ (representing either DTR, TS, ∆MAT~0-1980~ or the interaction between temperature variability and TS, AP or land type) with intercept ($\alpha_V$) and slope ($\beta_V$) terms. @Eq-global_alpha_v and @eq-global_beta_v are normal, flat priors for slope and intercept terms in @eq-global_mu_site and @eq-global_sigma_site is a flat gamma prior for the variance in mean mountain range sizes ($\sigma^2_{site}$). We compared within-sample predictive ability of the different climate variables using the Watanabe Akaike information criterion (WAIC) [@hooten2015], and leave-one-out cross validation (LOO) from the loo package version `r VERSION_LOO` [@vehtari2020] to determine which climate variables best predict species' elevational range sizes. Both criteria assess within-sample predictive error of the models. We evaluated strength and support for a given parameter or relationship through inspection of posterior probability distributions with a 95% credible interval [@gelman2019].
+
+[Local-scale analyses]{.underline}
+
+These analyses examine the responses of species' range sizes to DTR and TS within each mountain gradient. We did not test the influence of ∆MAT~0-1980~ due to the low resolution of the estimated past climate data. Similarly to the global-scale analyses, we excluded species found exclusively in the lower and upper `r EXCL_DEFAULT` m of each elevational gradient to reduce the influence of truncated species at the gradient edges (outputs of these analyses with `r enumerate(EXCLS)` m exclusion zones are presented in Fig. S[-@fig-histogram_slopes_all]). However, we did not standardize elevational gradients for these analyses because each elevational gradient was tested independently of the others. The length of elevational gradients showed no significant influence on slope direction within each mountain (Fig. S[-@fig-influence_of_gradient_length]). As a result, we used all `r data_info$n_locations` mountain locations with an elevation span ≥ `r ELEV_SPANS[1]` m. Finally, we assigned DTR and TS values to species' midpoint [@rohde1993]. We modeled the responses of elevational ranges within each mountain as:
+
+$$
+RS \sim N(\mu_{RS}, \sigma^2)
+$$ {#eq-local_rs}
+
+$$
+\mu_{RS} = \alpha[site_i] + \beta[site_i] * V
+$$ {#eq-local_mu}
+
+$$
+\alpha[site_i] \sim N(0, 10^{-6})
+$$ {#eq-local_alpha}
+
+$$
+\beta[site_i] \sim N(0, 10^{-6})
+$$ {#eq-local_beta}
+
+$$
+\sigma^2 \sim \Gamma(10^{-3}, 10^{-3})
+$$ {#eq-local_sigma}
+
+Where species range size ($RS$) is a normally distributed random variable (with mean, $\mu_{RS}$, and variance, $\sigma^2$; @eq-local_rs) predicted by mountain-specific intercepts $\alpha[site_i]$ and slopes $\beta[site_i]$ for a given explanatory variable $V$ (representing either DTR or TS) where $i$ is one of the `r data_info$n_locations` elevational gradients (@eq-local_mu). @Eq-local_alpha and @eq-local_beta are normal, flat priors for slope and intercept terms in @eq-local_mu. @Eq-local_sigma is a flat gamma prior for the variance in range sizes ($\sigma^2$). We assessed strength and support for each given parameter with a 95% credible interval.
+
+[Model diagnostics]{.underline}
+
+We fit the models using Markov chain Monte Carlo (MCMC) with R2jags version `r VERSION_R2JAGS` [@su2021] in R version `r VERSION_R` [@rcoreteam2020]. We ran 3 chains with `r format_thousands(JAGS_ITER)` iterations each and a burn-in of `r format_thousands(JAGS_BURN_IN)` until the effective sample size for each parameter reached `r format_thousands(JAGS_EFF_SIZE)`. We considered good convergence of the MCMCs to be when the potential scale reduction factor $\hat{R}$ was ≤ 1.01. We assessed good mixing of the models through visual inspection of trace and autocorrelation plots. Finally, we evaluated model fit using posterior predictive checks.

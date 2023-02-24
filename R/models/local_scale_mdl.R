@@ -11,7 +11,7 @@
       # likelihood ------------
       for (i in 1:n) {
         sp_range[i] ~ dnorm(mu[i], tau)
-        mu[i] <- alpha[location[i]] + beta[location[i]] * bioclim[i]
+        mu[i] <- alpha[location[i]] + beta[location[i]] * term[i]
 
         # simulated data for posterior predictive check
         # sp_range_rep[i] ~ dnorm(mu[i], tau)

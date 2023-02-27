@@ -89,7 +89,7 @@ gilchrist <- GlobalAnalyses$new(path_to_gilchrist_outputs)
 
 gilchrist$regressions(
   vars = "past_dmat",
-  facet_by = "elevation_span",
+  facet_cols = "elevation_span",
   labels = "∆ mean annual temperature (0-1980) (°C)"
 )
 

@@ -82,19 +82,19 @@ Run the following line to make the required data set to reproduce the analyses o
 trs_dtr_lower_third <- filter(trs, bio2 <= max(trs$bio2, na.rm = TRUE) / 3)
 ```
 
-Run the `~past_dmat` model using the `trs_dtr_lower_third` data set. I recommend changing the output `path` and `filename` in `run_jags()` to avoid overwriting existing output files. Finally, use `global_analyses()` to plot model estimates:
+Run the `~past_dmat` model using the `trs_dtr_lower_third` data set. I recommend changing the output `path` and `filename` in `run_jags()` to avoid overwriting existing output files. Finally, use the `GlobalAnalyses` class to plot model estimates:
 
 ```
-gilchrist <- global_analyses(path_to_gilchrist_outputs)
+gilchrist <- GlobalAnalyses$new(path_to_gilchrist_outputs)
 
-gilchrist$plot_regressions_(
-  exclusion_zone = EXCL_DEFAULT,
+gilchrist$regressions(
+  vars = "past_dmat",
   facet_by = "elevation_span",
-  labellers = "∆ mean annual temperature (0-1980) (°C)"
+  labels = "∆ mean annual temperature (0-1980) (°C)"
 )
 
-gilchrist$plot_posterior_distributions_(
-  exclusion_zone = EXCL_DEFAULT,
+gilchrist$posterior_distributions(
+  vars = "past_dmat",
   yvar = "elevation_span",
   facet = FALSE,
   reverse = TRUE,

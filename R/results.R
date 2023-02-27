@@ -5,96 +5,71 @@
 
 ####  Global-scale analyses  ####
   {
-    # · Instantiate global ----
-      {
-        trs_global <- global_analyses(PATH_GLOBAL)
-      }
+    trs_global <- GlobalAnalyses$new(PATH_GLOBAL)
 
-    # · Regressions main ----
-      {
-        trs_global$plot_regressions_(elevation_span = 2500)
-      }
+    trs_global$regressions(
+      vars = c("dtr", "ts", "past_dmat"),
+      elev_span = 2500
+    )
 
-    # · Regressions land type ----
-      {
-        trs_global$plot_regressions_(
-          elevation_span = 2500,
-          exclusion_zone = 250,
-          type = "land_type"
-        )
-      }
+    trs_global$regressions(
+      vars = "(dtr|ts|dmat)-land_type",
+      elev_span = 2500,
+      excl_zone = 250,
+      by_land_type = TRUE
+    )
 
-    # · Regressions location names ----
-      {
-        trs_global$plot_regressions_(
-          elevation_span = 2500,
-          exclusion_zone = 250,
-          point_labels = TRUE
-        )
-      }
+    trs_global$regressions(
+      vars = c("dtr", "ts", "past_dmat"),
+      elev_span = 2500,
+      excl_zone = 250,
+      point_labels = TRUE
+    )
 
-    # · Posterior distributions ----
-      {
-        trs_global$plot_posterior_distributions_(
-          vars = "dtr|ts|dmat",
-          yvar = "exclusion_zone",
-          std_from = "top",
-          scales = c(dtr = .013, ts = .018, past_dmat = .2),
-          param_names = c(
-            dtr = "β[DTR]",
-            ts = "β[TS]",
-            past_dmat = "β['∆'*MAT[0-1980]]"
-          ),
-          fill = c("#5E8CBA", "#CB624D", "#F5B83D")
-        )
-      }
-    # · Model comparison ----
-      {
-        trs_global$eval_models_(elevation_span = 2500, exclusion_zone = 250, std_from = "top")
-      }
+    trs_global$posterior_distributions(
+      vars = c("dtr", "ts", "past_dmat"),
+      yvar = "exclusion_zone",
+      std_from = "top",
+      scales = c(dtr = .013, ts = .018, past_dmat = .2),
+      labels = c(
+        dtr = "β[DTR]",
+        ts = "β[TS]",
+        past_dmat = "β['∆'*MAT[0-1980]]"
+      ),
+      fill = c("#5E8CBA", "#CB624D", "#F5B83D")
+    )
 
-    # · Statistical details ----
-      {
-        View(trs_global$get_statistical_details_())
-      }
+    trs_global$eval_models(
+      elev_span = 2500,
+      excl_zone = 250,
+      std_from = "top"
+    )
+
+    View(trs_global$get_statistical_details())
   }
 
 ####  Local-scale analyses  ####
   {
-    # · Instantiate local ----
-      {
-        trs_local <- local_analyses(PATH_LOCAL)
-      }
+    trs_local <- LocalAnalyses$new(PATH_LOCAL)
 
-    # · Histogram of slopes ----
-      {
-        trs_local$plot_slope_histogram_()
-      }
+    trs_local$slope_histograms()
 
-    # · Influence of elevation span ----
-      {
-        trs_local$plot_influence_elev_span_(trs, exclusion_zone = 250)
-      }
+    trs_local$influence_elev_span(trs, excl_zone = 250)
 
-    # · Slope summary ----
-      {
-        trs_local$get_slope_summary_()
-      }
+    trs_local$tbl_slope_summary()
   }
 
 # ---- map ----
   {
     bubble_colors <- c("#e34326", "#3051b5")
 
-    trs %>%
-      distinct(id_ref, .keep_all = TRUE) %>%
-      summarise(
-        lon,
-        lat,
-        n_sp,
+    trs |>
+      distinct(id_ref, .keep_all = TRUE) |>
+      reframe(
+        lon, lat, n_sp,
         span_default = if_else(elev_span >= ELEV_SPAN_DEFAULT, TRUE, FALSE)
-      ) %>%
-      drop_na() %>%
+      ) |>
+      drop_na() |>
       ggplot() +
       geom_sf(
         data = rnaturalearth::ne_countries(returnclass = "sf"),
@@ -127,15 +102,15 @@
 
 # ---- thermal variability range ----
   {
-    trs %>%
-      group_by(id_ref) %>%
-      distinct(elev_band, .keep_all = TRUE) %>%
-      group_by(location) %>%
+    trs |>
+      group_by(id_ref) |>
+      distinct(elev_band, .keep_all = TRUE) |>
+      group_by(location) |>
       summarise(
-        amplitude_dtr = max(bio2, na.rm = TRUE) - min(bio2, na.rm = TRUE),
-        amplitude_ts = max(bio4, na.rm = TRUE) - min(bio4, na.rm = TRUE)
-      ) %>%
-      pivot_longer(where(is.numeric)) %>%
+        range_dtr = calc_max_diff(bio2),
+        range_ts = calc_max_diff(bio4)
+      ) |>
+      pivot_longer(where(is.numeric)) |>
       ggplot(aes(name, value)) +
       geom_violin(
         trim = TRUE,

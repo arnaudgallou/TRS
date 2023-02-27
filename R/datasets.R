@@ -32,7 +32,7 @@
       {
         normalized <- "data/normalized" %>%
           list_files("normalized(?:_\\d)?\\.csv$", names = "[^-]+") %>%
-          sniff_dfs(.id = "dataset") %>%
+          sniff_dfs(names_to = "dataset") %>%
           rename(
             id_sp = occurrence_id,
             normalized_name = scientific_name,
@@ -44,8 +44,12 @@
 
     # · Datasets ----
       {
-        # unsuitable data (too large or unknown locations, no min/max elevations, doubtful data, etc.)
-        omit_ref <- c(20002, 20007, 20015, 20013, 20015, 20028, 20039, 20057, 20059, 20066, 20079, 20080, 20094, 20095)
+        # unsuitable data (too large or unknown locations, no min/max elevations,
+        # doubtful data, etc.)
+        omit_ref <- c(
+          20002, 20007, 20015, 20013, 20015, 20028, 20039, 20057, 20059, 20066,
+          20079, 20080, 20094, 20095
+        )
 
         dfs <- "data/datasets" %>%
           list_files(CSV, names = extract_file_name) %>%
@@ -61,14 +65,14 @@
               "^(?:(?:max|high)[_-]?(?:elev|alt).*|max|(?:elev|alt).*max)$" = "sp_max",
               "^ref_id$" = "id_ref"
             ),
-            .id = "dataset"
+            names_to = "dataset"
           ) %>%
           mutate(id_ref = if_else(
             str_detect(dataset, "\\d"),
             parse_num(dataset, as = "integer"),
             id_ref
           )) %>%
-          filter(!(id_ref %in% omit_ref)) %>%
+          filter(!id_ref %in% omit_ref) %>%
           group_by(dataset) %>%
           mutate(id_sp = row_number()) %>%
           group_by(id_ref) %>%
@@ -99,7 +103,10 @@
           ungroup() %>%
           select(dataset, id_ref, id_sp, original_name, sp_min, sp_max) %>%
           left_join(data_source, by = "id_ref") %>%
-          select(dataset, id_ref, location, region, continent, land_type, authority_code, id_sp:sp_max, lat:lon)
+          select(
+            dataset, id_ref, location, region, continent, land_type,
+            authority_code, id_sp:sp_max, lat:lon
+          )
       }
 
     # · Normalized dataset ----
@@ -112,12 +119,18 @@
             kingdom == "Plantae"
           ) %>%
           rename(gbif_sp_key = key) %>%
-          select(id_ref:id_sp, gbif_sp_key, family, original_name, normalized_name, name_status, accepted_name, sp_min:lon)
+          select(
+            id_ref:id_sp, gbif_sp_key, family, original_name, normalized_name,
+            name_status, accepted_name, sp_min:lon
+          )
       }
 
     # · Main dataset ----
       {
-        regions <- c("Hawaii", "Cape Verde", "Canary", "Socotra", "Azores", "Reunion", "Taiwan", "Nepal")
+        regions <- c(
+          "Hawaii", "Cape Verde", "Canary", "Socotra", "Azores", "Reunion",
+          "Taiwan", "Nepal"
+        )
 
         trs <- norm_df %>%
           filter(sp_min <= sp_max & sp_max <= 6500) %>%
@@ -150,15 +163,14 @@
             elev_band = round_nearest(sp_mean, -ELEV_BIN_WIDTH),
             land_type = replace_na(land_type, "continent")
           ) %>%
-          group_by(id_ref) %>%
           mutate(
             elev_span_min = min(sp_min),
             elev_span_max = max(sp_max),
             elev_span = elev_span_max - elev_span_min,
             n_sp = n(),
-            singleton = proportion(sp_range == 0)
+            singleton = proportion(sp_range == 0),
+            .by = id_ref
           ) %>%
-          ungroup() %>%
           arrange(location) %>%
           select(id_ref:region, land_type, lat:lon, gbif_sp_key:singleton) %>%
           left_join(trs_bioclim, by = c("location", "elev_band")) %>%

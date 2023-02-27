@@ -28,8 +28,8 @@ appendix-style: none
 ```{r}
 #| label: stats
 
-df_stats <- trs_global$get_statistical_details_(
-  "dtr|ts|dmat",
+df_stats <- trs_global$get_statistical_details(
+  vars = c("dtr", "ts", "past_dmat"),
   ELEV_SPAN_DEFAULT,
   EXCL_DEFAULT,
   std_from = "top"
@@ -169,12 +169,13 @@ Species' elevational range declined with all measures of temperature variability
 #| label: fig-regressions_main
 #| fig-cap: !expr glue("**Relationships between thermal variability and mean species' elevational ranges.** Diurnal temperature range (**A**), temperature seasonality (**B**) and the variation of mean annual temperature from 0 to 1980 AD (**C**). Points represent the estimated mean elevational ranges with their respective standard error in each of the {data_info$n_locations_global} standardized elevational gradients with length ≥ {ELEV_SPAN_DEFAULT} m. Thick lines are the posterior mean calculated from {N_DRAWS} random draws sampled from the {CI_DEFAULT * 100}% credible interval (thin blue lines). Colored dots indicate island (white) and continental (gray) mountains.")
 
-trs_global$plot_regressions_(
-  elevation_span = ELEV_SPAN_DEFAULT,
-  exclusion_zone = EXCL_DEFAULT,
-  n_draws = N_DRAWS,
-  draws_prob = CI_DEFAULT
-) %>%
+trs_global$regressions(
+  vars = c("dtr", "ts", "past_dmat"),
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+  std_from = "top",
+  labels = fig_labels
+) |> 
   label_facets(LETTERS, x = Inf, hjust = 1)
 ```
 
@@ -184,11 +185,13 @@ Among thermal predictors, diurnal temperature range was the most predictive (low
 #| label: fig-regressions_land_type
 #| fig-cap: !expr glue("**Relationships between thermal variability and mean species' elevational ranges in island and continental mountains.** Diurnal temperature range (**A**), temperature seasonality (**B**) and the variation of mean annual temperature from 0 to 1980 AD (**C**). Points represent the estimated mean elevational ranges with their respective standard error in each of the {data_info$n_locations_global} standardized elevational gradients with length ≥ {ELEV_SPAN_DEFAULT} m. Colors indicate island (white dots, blue regressions) and continental (gray dots, red regressions) mountains.")
 
-trs_global$plot_regressions_(
-  elevation_span = ELEV_SPAN_DEFAULT,
-  exclusion_zone = EXCL_DEFAULT,
-  type = "land_type"
-) %>%
+trs_global$regressions(
+  vars = "(dtr|ts|dmat)-land_type",
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+  by_land_type = TRUE,
+  labels = fig_labels
+) |> 
   label_facets(LETTERS, x = Inf, hjust = 1)
 ```
 
@@ -204,15 +207,15 @@ Results from the local-scale analyses were less conclusive than the analyses at 
 #| fig-width: 4.6
 #| fig-cap: !expr glue("**Results from the local-scale analyses.** Responses of species' elevational ranges to diurnal temperature range (**A**) and temperature seasonality (**B**) within each of the {data_info$n_locations} mountains used in the study. Histograms are of mean slope terms divided by their standard deviation from the {CI_DEFAULT * 100}% credible interval for the local-scale analyses. Colors indicate whether the {CI_DEFAULT * 100}% credible interval includes 0 (light blue) or not (dark blue). Dashed lines indicate 0.")
 
-{
-  trs_local$plot_slope_histogram_(exclusion_zone = EXCL_DEFAULT) +
-    scale_y_continuous(breaks = seq(0, 12, 4)) +
-    theme(
-      axis.title = element_text(size = 9),
-      axis.text = element_text(size = 9)
-    )
-} %>%
-  label_facets(LETTERS, size = 9 / .pt)
+
+slope_hist <- trs_local$slope_histograms(excl_zone = EXCL_DEFAULT) +
+  scale_y_continuous(breaks = seq(0, 12, 4)) +
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_text(size = 8.5),
+    axis.text = element_text(size = 7.5)
+  )
+label_facets(slope_hist, LETTERS, size = 8.5 / .pt)
 ```
 
 The ratio of positive and negative relationships between species' range sizes and temperature variation remained essentially the same, independent of the size of the exclusion zone (Fig. S12, Table S4). However, the number of slopes with low uncertainties decreased drastically with increasing exclusion zone sizes (Fig. S12, Table S4), suggesting that species found exclusively at the domain boundaries strongly influence the strength of the pattern within mountains and that the narrowing of species' range sizes at domain boundaries greatly influence the probability of finding statistically significant relationships. Species exclusively inhabiting lower and higher elevations had less influence in the global-scale analyses, where results remain consistent, independent of the size of the exclusion zone.

@@ -15,10 +15,16 @@
     theme_update(strip.text = element_blank())
   }
 
-####  Closures  ####
+####  Classes  ####
   {
-    trs_global <- global_analyses(PATH_GLOBAL)
-    trs_local <- local_analyses(PATH_LOCAL)
+    trs_global <- GlobalAnalyses$new(PATH_GLOBAL)
+    trs_local <- LocalAnalyses$new(PATH_LOCAL)
+    
+    fig_labels <- c(
+      dtr = "Diurnal temperature range (\u00b0C)",
+      ts = "Temperature seasonality (\u00b0C)",
+      past_dmat = "\u0394 mean annual temperature\n(0-1980) (\u00b0C)"
+    )
   }
 
 ####  Data info  ####

@@ -12,34 +12,34 @@
         out <- basename(file)
         out <- str_remove(out, "10_0?")
         str_extract(out, "bio\\d+")
-      }) %>%
+      }) |>
       rs_read()
 
     walk(dem_folders, \(folder) {
       location <- extract_file_name(folder, to_snake_case = TRUE)
-      dem_files <- list_files(folder, TIF, names = \(file) {
+
+      list_files(folder, TIF, names = \(file) {
         str_extract(dirname(file), "[^/]+$")
-      })
-      out <- map(dem_files, \(file) {
+      }) |>
+       map(\(file) {
         dem <- rs_read(file)
         dem <- rs_set_range(dem)
         dem <- rs_filter(dem, dem > 0)
         rs_reclass(dem, binwidth = ELEV_BIN_WIDTH, col_name = "elev_band")
-      })
-      out <- map(out, \(dem) {
+      }) |>
+      map(\(dem) {
         clim <- rs_crop(bioclim, dem, snap = "out")
         clim <- rs_project(clim, dem)
         clim <- rs_zonal(clim, dem, fun = "mean", na.rm = TRUE)
         as_tibble(clim)
-      })
-      out <- list_rbind(out, names_to = "location")
-      out <- mutate(
-        out,
+      }) |>
+      list_rbind(names_to = "location") |>
+      mutate(
         across(starts_with("bio"), mean),
         .by = elev_band
-      )
-      out <- distinct(out, elev_band, .keep_all = TRUE)
-      write_csv(out, glue("gis/clim/extracted/present/{location}-bioclim.csv"))
+      ) |>
+      distinct(elev_band, .keep_all = TRUE) |>
+      write_csv(glue("gis/clim/extracted/present/{location}-bioclim.csv"))
 
       gc()
     }, .progress = TRUE)
@@ -54,7 +54,7 @@
           out <- rs_read(file)
           rs_ext_to_polygon(out)
         })
-      }) %>%
+      }) |>
       map(rs_vect)
 
     "gis/clim/data/past/var" |>

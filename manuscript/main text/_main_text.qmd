@@ -1,7 +1,7 @@
 ```{r}
 #| label: stats
 df_stats <- trs_global$get_statistical_details(
-  c("dtr", "ts", "dmat"),
+  vars = c("dtr", "ts", "dmat"),
   elev_span = ELEV_SPAN_DEFAULT,
   excl_zone = EXCL_DEFAULT,
   std_from = "top"
@@ -37,12 +37,13 @@ theme_update(
     # · Thermal tolerance-thermal variation rel. ----
     
     A <- SH_base +
-      tag("A", "topleft", size = 14 / .pt) +
+      tag("a", "topleft", size = size$tag) +
       lims(x = c(0, 1), y = c(0, 1)) +
       labs(
         x = "Temperature variation",
         y = "Thermal tolerance"
       ) +
+      theme_elesic() +
       theme(
         axis.ticks = element_blank(),
         axis.text = element_blank()
@@ -51,7 +52,7 @@ theme_update(
     # · Species' range-thermal variation rel. ----
     
     B <- SH_base +
-      tag("B", "topleft", size = 14 / .pt) +
+      tag("b", "topleft", size = size$tag) +
       ylab("Species' range size") +
       scale_x_continuous(
         breaks = .5,
@@ -63,20 +64,19 @@ theme_update(
         axis.title.x = element_blank()
       )
   }
-
 ####  TRS hypothesis  ####
   {
     # · Conceptual fig. ----
     
     C <- make_conceptual_fig("trs", label_size = 11 / .pt) + 
       theme(axis.text.x = element_text(size = 12)) +
-      tag("C", "topleft", size = 14 / .pt)
+      tag("c", "topleft", size = size$tag)
     
     # · Species' range-thermal variation rel. ----
     
     D <- ggplot() +
       geom_segment(aes(x = 0, xend = 1, y = 1, yend = 0)) +
-      tag("D", "topright", size = 14 / .pt) +
+      tag("d", "topright", size = size$tag) +
       lims(x = c(0, 1), y = c(0, 1)) +
       labs(
         x = "Temperature variation",
@@ -114,14 +114,13 @@ Species' elevational range declined with all measures of temperature variability
 #| label: fig-regressions_main
 #| fig-cap: !expr glue("**Relationships between thermal variability and mean species' elevational ranges.** Diurnal temperature range (**A**), temperature seasonality (**B**) and the variation of mean annual temperature from 0 to 1980 AD (**C**). Points represent the estimated mean elevational ranges with their respective standard error in each of the {data_info$n_locations_global} standardized elevational gradients with length ≥ {ELEV_SPAN_DEFAULT} m. Thick lines are the posterior mean calculated from {N_DRAWS} random draws sampled from the {CI_DEFAULT * 100}% credible interval (thin blue lines). Colored dots indicate island (white) and continental (gray) mountains.")
 
-trs_global$regressions(
+fig <- trs_global$regressions(
   vars = c("dtr", "ts", "past_dmat"),
   elev_span = ELEV_SPAN_DEFAULT,
   excl_zone = EXCL_DEFAULT,
-  std_from = "top",
-  labels = fig_labels
-) |> 
-  label_facets(LETTERS, x = Inf, hjust = 1)
+  labels = labels
+)
+label_facets(fig, letters, x = Inf, hjust = 1)
 ```
 
 Among thermal predictors, diurnal temperature range was the most predictive (lowest WAIC and LOO; Table S2) and had the strongest and least uncertain relationship to species' range size ($P(\beta < 0) = `r global_stats("dtr", "p_beta")`$, $R^2:`r global_stats("dtr", "r2")`$), followed by temperature seasonality ($P(\beta < 0) ≈ `r global_stats("ts", "p_beta")`$, $R^2:`r global_stats("ts", "r2")`$) and ∆MAT~0-1980~ ($P(\beta < 0) ≈ `r global_stats("past_dmat", "p_beta")`$, $R^2:`r global_stats("past_dmat", "r2")`$; @fig-regressions_main, Fig. S6 & Table S3). The strong relationship of species' range size to diurnal temperature range suggests that short-term temperature variation is more important in determining species range sizes than previously thought. Longer-term variables such as temperature seasonality might be less relevant than expected due to the ability of plant species inhabiting seasonal climates to avoid long periods of unfavorable temperatures via dormancy. As a consequence, the relative range of temperatures effectively experienced by extratropical species may be less than the estimated seasonal variability. The narrowing of sessile species' elevational ranges may be exacerbated in mountains with high diurnal temperature variation because they cannot escape extreme temperatures over such short time-scales. A decline in species' elevational ranges in response to high diurnal temperature range has also been reported in terrestrial vertebrates [@chan2016], suggesting a general pattern. Chan et al. [@chan2016] used a simulation by Gilchrist [@gilchrist1995] to explain the negative relationship via evolutionary selection by diurnal temperature fluctuation for narrow thermal tolerance. Gilchrist's simulation assumes survival of all individuals under any circumstances and variability in range size is merely linked to how reproductive success is related to performance breadth [@gilchrist1995]. Predictions are thus only realistic if species survive unsuitable temperatures (e.g. via dormant stages). If this assumption is not met, species with small elevational ranges need broad thermal tolerance in order to survive the extremes of short-term temperature fluctuation. Gilchrist makes explicit assumptions of the performance breadth of a species based on the interactions between among- and within-generation variation. Exploring our data further to assess the influence of these interactions did not show support for Gilchrist's hypothesis (Fig. S8-10).
@@ -130,14 +129,14 @@ Among thermal predictors, diurnal temperature range was the most predictive (low
 #| label: fig-regressions_land_type
 #| fig-cap: !expr glue("**Relationships between thermal variability and mean species' elevational ranges in island and continental mountains.** Diurnal temperature range (**A**), temperature seasonality (**B**) and the variation of mean annual temperature from 0 to 1980 AD (**C**). Points represent the estimated mean elevational ranges with their respective standard error in each of the {data_info$n_locations_global} standardized elevational gradients with length ≥ {ELEV_SPAN_DEFAULT} m. Colors indicate island (white dots, blue regressions) and continental (gray dots, red regressions) mountains.")
 
-trs_global$regressions(
-  vars = "(dtr|ts|dmat)-land_type",
+fig <- trs_global$regressions(
+  vars = "(?:dtr|ts|past_dmat)-land_type",
   elev_span = ELEV_SPAN_DEFAULT,
   excl_zone = EXCL_DEFAULT,
   by_land_type = TRUE,
-  labels = fig_labels
-) |> 
-  label_facets(LETTERS, x = Inf, hjust = 1)
+  labels = labels
+)
+label_facets(fig, letters, x = Inf, hjust = 1)
 ```
 
 Island diversity differs from mainlands as a result of isolation-driven immigration, extinction and speciation processes [@flantua2020], which could influence species' range size differently. Comparing species' range sizes in island and continental mountains revealed broader mean species' range sizes on islands (@fig-regressions_main). However, diurnal temperature range was the only variable to account for variation in species' range sizes between island and continental mountains. Island mountains were characterized by both lower diurnal temperature range and broader mean elevational range sizes than continental mountains (@fig-regressions_land_type). Lower diurnal temperature variation in island mountains likely results from a buffering effect of the ocean on air temperature that would make the climate less temporally variable [@shen2021; @weigelt2013]. The strength and continuity in the diurnal temperature range-species' range size relationship in island and continental mountains ([@fig-regressions_land_type]A) suggest that no additional island-specific factors (e.g. lower competition) are needed to explain the range-size pattern and that the temperature range squeeze hypothesis offers a unifying explanation for elevational range sizes on continents and islands at a global scale.
@@ -153,14 +152,13 @@ Results from the local-scale analyses were less conclusive than the analyses at 
 #| fig-cap: !expr glue("**Results from the local-scale analyses.** Responses of species' elevational ranges to diurnal temperature range (**A**) and temperature seasonality (**B**) within each of the {data_info$n_locations} mountains used in the study. Histograms are of mean slope terms divided by their standard deviation from the {CI_DEFAULT * 100}% credible interval for the local-scale analyses. Colors indicate whether the {CI_DEFAULT * 100}% credible interval includes 0 (light blue) or not (dark blue). Dashed lines indicate 0.")
 
 
-slope_hist <- trs_local$slope_histograms(excl_zone = EXCL_DEFAULT) +
+fig <- trs_local$slope_histograms(excl_zone = EXCL_DEFAULT) +
   scale_y_continuous(breaks = seq(0, 12, 4)) +
   theme(
-    strip.text = element_blank(),
     axis.title = element_text(size = 8.5),
-    axis.text = element_text(size = 7.5)
+    axis.text = element_text(size = 8)
   )
-label_facets(slope_hist, LETTERS, size = 8.5 / .pt)
+label_facets(fig, letters, x = -18, size = 8.5 / .pt)
 ```
 
 The ratio of positive and negative relationships between species' range sizes and temperature variation remained essentially the same, independent of the size of the exclusion zone (Fig. S12, Table S4). However, the number of slopes with low uncertainties decreased drastically with increasing exclusion zone sizes (Fig. S12, Table S4), suggesting that species found exclusively at the domain boundaries strongly influence the strength of the pattern within mountains and that the narrowing of species' range sizes at domain boundaries greatly influence the probability of finding statistically significant relationships. Species exclusively inhabiting lower and higher elevations had less influence in the global-scale analyses, where results remain consistent, independent of the size of the exclusion zone.

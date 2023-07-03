@@ -1,72 +1,17 @@
----
-lang: en
-format: 
-  pdf:
-    linestretch: 1.25
-    fig-format: pdf
-    mainfont: Roboto
-    include-in-header: ../styles.tex
-    keep-tex: true
-fig-height: 2.8
-fig-width: 7.9
-crossref:
-  fig-title: Fig.
-  fig-prefix: Fig.
-knitr:
-  opts_chunk: 
-    dev: cairo_pdf
-execute:
-  echo: false
-  warning: false
-bibliography: ../refs/references.bib
-csl: ../refs/science-without-titles.csl
-appendix-style: none
----
-
-{{< include ../_init.qmd >}}
-
 ```{r}
 #| label: stats
-
 df_stats <- trs_global$get_statistical_details(
-  vars = c("dtr", "ts", "past_dmat"),
-  ELEV_SPAN_DEFAULT,
-  EXCL_DEFAULT,
+  c("dtr", "ts", "dmat"),
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
   std_from = "top"
 )
 global_stats <- partial(get_regression_stats, df_stats)
-
-df_slope_summary <- trs_local$get_slope_summary_()
+df_slope_summary <- trs_local$tbl_slope_summary()
 slope_perc <- partial(get_slope_perc, df_slope_summary)
 ```
 
-# Diurnal temperature variation drives elevational range sizes globally
-
-**Authors:**
-
-```{r}
-#| results: asis
-authors$get_author_list(format = "^a^c", FALSE) %>% cat(sep = ", ")
-```
-
-**Affiliations:**
-
-```{r}
-#| results: asis
-authors$get_affiliations() %>% cat(sep = "\n\n")
-```
-
-\*Corresponding author. Email: `r authors$get_corresponding_emails()`
-
-**Abstract:**
-
-A prominent hypothesis in ecology is that larger species ranges are found in more variable climates because species develop broader environmental tolerances, predicting a positive range size-temperature variability relationship. However, this overlooks the extreme temperatures that variable climates impose on species, with upper or lower thermal limits more likely to be exceeded. Accordingly, we propose the 'temperature range squeeze' hypothesis, predicting a negative range size-temperature variability relationship. We test these contrasting predictions by relating `r data_info$n_data` elevational range sizes of vascular plants in `r data_info$n_locations` mountains to short- and long-term temperature variation. Consistent with our novel hypothesis, we find that species' range size is negatively correlated with diurnal temperature range. Accurate predictions of short-term temperature variation will become increasingly important for extinction risk assessment in the future.
-
-**One-Sentence Summary:**
-
-Decreasing elevational range sizes of plants with greater diurnal temperature range supports a novel biodiversity hypothesis and indicates elevated extinction risk of continental species.
-
-**Main Text:**
+## Main Text
 
 There is remarkable variation in species' range sizes, from endemic species confined to single mountaintops to cosmopolitan species occurring in most habitats around the world [@brown1996]. Although variation in species distributions has been highlighted since the earliest days of ecology and biogeography [@vonhumboldt1805], the question of how range size dynamics relate to climate and geography has remained controversial [@gaston1999; @colwell2000; @mccain2009; @klinges2021; @macek2021]. Progress on this question is essential for better understanding of ecological and evolutionary processes, broad-scale diversity patterns [@stevens1992; @rahbek2019] and species' extinction risks in the context of climate change [@urban2015; @staude2020].
 
@@ -221,48 +166,3 @@ label_facets(slope_hist, LETTERS, size = 8.5 / .pt)
 The ratio of positive and negative relationships between species' range sizes and temperature variation remained essentially the same, independent of the size of the exclusion zone (Fig. S12, Table S4). However, the number of slopes with low uncertainties decreased drastically with increasing exclusion zone sizes (Fig. S12, Table S4), suggesting that species found exclusively at the domain boundaries strongly influence the strength of the pattern within mountains and that the narrowing of species' range sizes at domain boundaries greatly influence the probability of finding statistically significant relationships. Species exclusively inhabiting lower and higher elevations had less influence in the global-scale analyses, where results remain consistent, independent of the size of the exclusion zone.
 
 In summary, our findings support the novel temperature range squeeze hypothesis ([@fig-conceptual]C-D) that predicts a decline in species' range sizes in climatically variable habitats, thereby disproving Stevens' hypothesis [@stevens1989] ([@fig-conceptual]B). Diurnal temperature variation is important in driving the elevation ranges of vascular plants globally, and helps to account for range-size differences between continents and islands. Local (within-mountain) variation in species' elevational ranges, however, is largely decoupled from temperature variability. These advances in our understanding of the drivers of plant species distributions have broad implications for conservation biology. Our findings challenge the current understanding of how global change threatens small-ranged tropical species [@laurance2011]. Extinction risk may be higher in continental mountains where species are more likely to have smaller elevational ranges due to higher thermal variability than species inhabiting mountain systems exposed to oceanic climates. Short-term temperature variation may also become increasingly important in driving local extinction risks.
-
-**References and Notes**
-
-::: {#refs}
-:::
-
-**Acknowledgements:**
-
-We are grateful to Monika Kriechbaum and Empar Carrillo Ortuño for providing us with species' authorities for accurate taxa standardization of the Mustang and Espot y Boí data, respectively. We thank Kirsten O'Sullivan, Chi-Hua Chang and the Forest Management Laboratory at the National Pingtung University of Science and Technology for translating, processing and putting together the Taiwan data. We thank Cathy Jenks for putting together the Drakensberg, Jamaica, Jaya and Hengduan datasets as well as Marten Winter for putting together the Afghanistan dataset. We thank Richard J. Telford for providing advice on the R code and figures as well as Camila Pacheco-Riaño for advice on GIS analyses.
-
-**Funding:**
-
-S.G.A.F. acknowledges support from Trond Mohn Stiftelse (TMS) and University of Bergen for the startup grant 'TMS2022STG03', and from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation program (grant agreement no. 741413) to H.J.B. Birks.
-
-**Author contributions:**
-
-```{r}
-#| results: asis
-contributions <- authors$get_contributions()
-cat(contributions[c(1, 2, 6, 5, 4, 10, 11, 7, 3, 9, 8)], sep = "\n\n")
-```
-
-All authors contributed to the review & editing of the original draft.
-
-**Competing interests:**
-
-The authors declare no competing interests.
-
-**Data and materials availability:**
-
-Data will be publicly available after acceptance.
-
-**Supplementary Materials**
-
-Materials and Methods
-
-Supplementary Text
-
-Figs. S1 to S13
-
-Tables S1 to S4
-
-Data S1 to S2
-
-References (`r ref_range("manuscript/refs/references.bib", from = "supplementary", sep = "--")`)

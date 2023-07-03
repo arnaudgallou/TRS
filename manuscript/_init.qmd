@@ -2,25 +2,31 @@
 #| label: init
 #| include: false
 
-.__init__()
-
 ####  Imports  ####
   {
-    library(chalkr)
+    library(plume)
+    source("R/init.R")
     source("manuscript/helpers.R")
   }
 
 ####  Theme  ####
   {
     theme_update(strip.text = element_blank())
+    
+    size <- list(
+      title = 9,
+      text = 8,
+      label = 10 / .pt,
+      tag = 13 / .pt
+    )
   }
 
-####  Classes  ####
+####  Analyses  ####
   {
     trs_global <- GlobalAnalyses$new(PATH_GLOBAL)
     trs_local <- LocalAnalyses$new(PATH_LOCAL)
     
-    fig_labels <- c(
+    labels <- c(
       dtr = "Diurnal temperature range (\u00b0C)",
       ts = "Temperature seasonality (\u00b0C)",
       past_dmat = "\u0394 mean annual temperature\n(0-1980) (\u00b0C)"
@@ -45,13 +51,8 @@
 ####  Authors  ####
   {
     df_authors <- googlesheets4::read_sheet(GS_AUTHORS)
-    
-    authors <- Authors$new(df_authors, options = list(
-      affiliation_sep = " :: ",
-      tidy = TRUE,
-      initial_full_stop = TRUE
-    ))
-    
-    authors$set_correspendence("gallou")
+
+    aut <- Plume$new(df_authors, names = c(contribution = "contribution_v"))
+    aut$set_corresponding_authors(gallou, by = "family_name")
   }
 ```

@@ -1,0 +1,83 @@
+---
+title: Diurnal temperature range as a key predictor of plants' elevation ranges globally
+lang: en
+format: 
+  pdf:
+    fontsize: 9pt
+    linestretch: 1.25
+    fig-format: pdf
+    mainfont: Roboto
+    include-in-header: styles.tex
+    keep-tex: true
+fig-height: 2.8
+fig-width: 7.9
+crossref:
+  fig-title: Fig.
+  fig-prefix: Fig.
+  eq-prefix: eq.
+knitr:
+  opts_chunk: 
+    dev: cairo_pdf
+execute:
+  echo: false
+  warning: false
+bibliography: refs/references.bib
+csl: refs/nature.csl
+appendix-style: none
+---
+
+{{< include _init.qmd >}}
+
+## Authors
+
+`r aut$get_author_list(format = "^a^co")`
+
+## Affiliations
+
+```{r}
+#| results: asis
+aut$get_affiliations() |> cat(sep = "\n\n")
+```
+
+\*Corresponding author. Email: `r aut$get_contact_details("{details}")`
+
+## Abstract
+
+A prominent hypothesis in ecology is that larger species ranges are found in more variable climates because species develop broader environmental tolerances, predicting a positive range size-temperature variability relationship. However, this overlooks the extreme temperatures that variable climates impose on species, with upper or lower thermal limits more likely to be exceeded. Accordingly, we propose the 'temperature range squeeze' hypothesis, predicting a negative range size-temperature variability relationship. We test these contrasting predictions by relating `r data_info$n_data` elevation range sizes of vascular plants in `r data_info$n_locations` mountains to short- and long-term temperature variation. Consistent with our novel hypothesis, we find that species' range size is negatively correlated with diurnal temperature range. Accurate predictions of short-term temperature variation will become increasingly important for extinction risk assessment in the future.
+
+## One-Sentence Summary
+
+Decreasing elevation range sizes of plants with greater diurnal temperature range supports a novel biodiversity hypothesis and indicates elevated extinction risk of continental species.
+
+<!-- main text -->
+
+{{< include "main text/_main_text.qmd" >}}
+
+<!-- methods -->
+
+{{< include methods/_methods.qmd >}}
+
+## References
+
+::: {#refs}
+:::
+
+## Acknowledgements
+
+We are grateful to Monika Kriechbaum and Empar Carrillo Ortuño for providing us with species' authorities for accurate taxa standardization of the Mustang and Espot y Boí data, respectively. We thank Kirsten O'Sullivan, Chi-Hua Chang and the Forest Management Laboratory at the National Pingtung University of Science and Technology for translating, processing and putting together the Taiwan data. We thank Cathy Jenks for putting together the Drakensberg, Jamaica, Jaya and Hengduan datasets as well as Marten Winter for putting together the Afghanistan dataset. We thank Richard J. Telford for providing advice on the R code and figures as well as Camila Pacheco-Riaño for advice on GIS analyses.
+
+## Funding
+
+S.G.A.F. acknowledges support from Trond Mohn Stiftelse (TMS) and University of Bergen for the startup grant 'TMS2022STG03', and from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation program (grant agreement no. 741413) to H.J.B. Birks.
+
+## Author contributions
+
+```{r}
+#| results: asis
+contributions <- aut$get_contributions(role_first = FALSE, name_list = TRUE)
+cat(contributions[c(1, 7, 2, 4, 5, 3, 8, 6)], sep = "; ")
+```
+
+## Competing interests
+
+The authors declare no competing interests.

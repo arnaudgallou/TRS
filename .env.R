@@ -2,9 +2,9 @@ PATH_GLOBAL="data/jags/global-scale"
 PATH_LOCAL="data/jags/local-scale"
 
 CSV="\\.csv$"
-TIF="\\.tif$"
 RDS="\\.rds$"
 ASC="\\.asc$"
+TIF="\\.tiff?$"
 
 ELEV_SPANS=c(1500, 2000, 2500)
 ELEV_SPAN_DEFAULT=ELEV_SPANS[3]

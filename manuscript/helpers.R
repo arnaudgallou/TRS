@@ -1,12 +1,10 @@
 label_facets <- partial(egg::tag_facet, open = "", close = "")
 
-
 get_n_data <- function(x) {
   x <- nrow(x)
   x <- round_nearest(x, -1000)
   format_thousands(x)
 }
-
 
 get_n_location <- function(x, min_elev_span, land_type) {
   if (!missing(land_type)) {
@@ -19,7 +17,6 @@ get_n_location <- function(x, min_elev_span, land_type) {
   length(x)
 }
 
-
 get_slope_perc <- function(x, .model, direction = c("+", "-"), certainty, excl_zone = 250) {
   certainty <- if (!missing(certainty)) glue("_{certainty}") else "$"
   direction <- if (match.arg(direction) == "+") "positive" else "negative"
@@ -27,7 +24,6 @@ get_slope_perc <- function(x, .model, direction = c("+", "-"), certainty, excl_z
   x <- select(x, matches(glue("{direction}{certainty}")))
   pull(x)
 }
-
 
 get_regression_stats <- function(x, .model, var = c("r2", "p_beta")) {
   var <- if (match.arg(var) == "r2") 1 else 2
@@ -189,7 +185,7 @@ make_conceptual_fig <- function(concept = c("trs", "gilchrist"), label_size = 10
         alpha = .3
       )
     ) +
-    scale_fill_manual(values = c("#f57a5b", "#85a9d6", "#f57a5b")) +
+    scale_fill_manual(values = c("#ff6b6c", "#85a9d6", "#ff6b6c")) +
     map2(
       c(1, 2),
       c("last", "both"),

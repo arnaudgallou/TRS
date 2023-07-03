@@ -6,14 +6,16 @@
 
 .gs.R
 notes.txt
+render.R
 
 data/*
 !data/README.md
 
 gis/
-manuscript/**/main_text_files/
+poster/
+manuscript/**/*.pdf
+manuscript/**/.trackdown/
 manuscript/appendix/
-manuscript/images/
-manuscript/main text/main_text.tex
+manuscript/trs.tex
 
 *.csl

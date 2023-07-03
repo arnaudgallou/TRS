@@ -30,7 +30,7 @@
         }) |>
         map(\(dem) {
           clim <- rs_crop(bioclim, dem, snap = "out")
-          clim <- rs_project(clim, dem)
+          clim <- rs_resample(clim, dem)
           clim <- rs_zonal(clim, dem, fun = "mean", na.rm = TRUE)
           as_tibble(clim)
         }) |>
@@ -41,8 +41,6 @@
         ) |>
         distinct(elev_band, .keep_all = TRUE) |>
         write_csv(glue("gis/clim/extracted/present/{location}-bioclim.csv"))
-
-      gc()
     }, .progress = TRUE)
   }
 

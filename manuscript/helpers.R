@@ -1,5 +1,7 @@
 label_facets <- partial(egg::tag_facet, open = "", close = "")
 
+format_thousands <- partial(format, big.mark = ",")
+
 get_n_data <- function(x) {
   x <- nrow(x)
   x <- round_nearest(x, -1000)

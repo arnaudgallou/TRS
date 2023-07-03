@@ -47,7 +47,7 @@
         # unsuitable data (too large or unknown locations, no min/max elevations,
         # doubtful data, etc.)
         omit_ref <- c(
-          20002, 20007, 20015, 20013, 20015, 20028, 20039, 20057, 20059, 20066,
+          20002, 20007, 20015, 20013, 20028, 20039, 20057, 20059, 20066,
           20079, 20080, 20094, 20095
         )
 

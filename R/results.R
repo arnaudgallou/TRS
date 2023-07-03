@@ -97,7 +97,7 @@
       scale_fill_manual(values = alpha(bubble_colors, .3)) +
       guides(color = "none", fill = "none") +
       theme_void() +
-      theme(legend.position = c(.1, .25))
+      theme(legend.position = c(.1, .3))
   }
 
 # ---- thermal variability range ----

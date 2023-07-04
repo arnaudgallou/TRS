@@ -144,7 +144,7 @@
           "Taiwan", "Nepal"
         )
 
-        trs2 <- norm_df |>
+        trs <- norm_df |>
           filter(sp_min <= sp_max & sp_max <= 6500) |>
           drop_na(sp_min, sp_max) |>
           mutate(location = case_when(

@@ -23,7 +23,6 @@ execute:
   warning: false
 bibliography: refs/references.bib
 csl: refs/nature.csl
-appendix-style: none
 ---
 
 {{< include _init.qmd >}}
@@ -57,11 +56,6 @@ Decreasing elevation range sizes of plants with greater diurnal temperature rang
 
 {{< include methods/_methods.qmd >}}
 
-## References
-
-::: {#refs}
-:::
-
 ## Acknowledgements
 
 We are grateful to Monika Kriechbaum and Empar Carrillo Ortuño for providing us with species' authorities for accurate taxa standardization of the Mustang and Espot y Boí data, respectively. We thank Kirsten O'Sullivan, Chi-Hua Chang and the Forest Management Laboratory at the National Pingtung University of Science and Technology for translating, processing and putting together the Taiwan data. We thank Cathy Jenks for putting together the Drakensberg, Jamaica, Jaya and Hengduan datasets as well as Marten Winter for putting together the Afghanistan dataset. We thank Richard J. Telford for providing advice on the R code and figures as well as Camila Pacheco-Riaño for advice on GIS analyses.
@@ -81,3 +75,5 @@ cat(contributions[c(1, 7, 2, 4, 5, 3, 8, 6)], sep = "; ")
 ## Competing interests
 
 The authors declare no competing interests.
+
+## References

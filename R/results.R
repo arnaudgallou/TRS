@@ -32,9 +32,9 @@
       std_from = "top",
       scales = c(dtr = .013, ts = .018, past_dmat = .2),
       labels = c(
-        dtr = "β[DTR]",
-        ts = "β[TS]",
-        past_dmat = "β['∆'*MAT[0-1980]]"
+        dtr = "beta[DTR]",
+        ts = "beta[TS]",
+        past_dmat = "beta[Delta*MAT[0-1980]]"
       ),
       fill = c("#5E8CBA", "#CB624D", "#F5B83D")
     )

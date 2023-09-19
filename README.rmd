@@ -14,6 +14,24 @@ knitr::opts_chunk$set(eval = FALSE)
 
 Repository to reproduce the analyses in the paper *"Diurnal temperature range as a key predictor of plants' elevation ranges globally"*.
 
+## Dependencies
+
+Below are the different R packages required to run the code in this repository:
+
+* [tidyverse](https://www.tidyverse.org)
+* [TRS.utilities](https://github.com/arnaudgallou/TRS.utilities/)
+* [glue](https://glue.tidyverse.org)
+* [bayesplot](https://mc-stan.org/bayesplot/) (only for model diagnostics)
+
+To install TRS.utilities, use:
+
+```{r}
+# install.packages("pak")
+pak::pak("arnaudgallou/TRS.utilities")
+```
+
+In addition, you will need to have [JAGS](https://sourceforge.net/projects/mcmc-jags/) installed on your machine.
+
 ## Usage
 
 Simply use the `main.R` file to run all the analyses performed in the manuscript.
@@ -82,7 +100,7 @@ Once the models have finished running, use:
 Run the following line to make the required data set to reproduce the analyses on Gilchrist's hypothesis.
 
 ```{r}
-trs_dtr_lower_third <- filter(trs, bio2 <= max(trs$bio2, na.rm = TRUE) / 3)
+trs_dtr_lower_third <- filter(trs, bio2 <= max(bio2, na.rm = TRUE) / 3)
 ```
 
 Run the `~past_dmat` model using the `trs_dtr_lower_third` data set.
@@ -215,21 +233,3 @@ gis
 Open PaleoView and download the climate data (see chapter 2 of [PaleoView's user manual](http://www.ecography.org/sites/ecography.org/files/appendix/ecog-03031.pdf)) for mean temperature and precipitation. Configure the input data location (see chapter 3 in the user manual). Run PaleoView with the same settings as shown in the image below for `temperature` and `precipitation`:  
 
 <img src="images/paleoview_settings.png" style="heigh: 639px; width: 556px"/></img>
-
-## Dependencies
-
-Below are the different R packages required to run the code in this repository:
-
-* [tidyverse](https://www.tidyverse.org)
-* [TRS.utilities](https://github.com/arnaudgallou/TRS.utilities/)
-* [glue](https://glue.tidyverse.org)
-* [bayesplot](https://mc-stan.org/bayesplot/) (only for model diagnostics)
-
-To install TRS.utilities, use:
-
-```{r}
-# install.packages("pak")
-pak::pak("arnaudgallou/TRS.utilities")
-```
-
-In addition, you will need to have [JAGS](https://sourceforge.net/projects/mcmc-jags/) installed on your machine.

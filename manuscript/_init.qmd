@@ -52,7 +52,7 @@
   {
     df_authors <- googlesheets4::read_sheet(GS_AUTHORS)
 
-    aut <- Plume$new(df_authors, names = c(role = "contribution_v"))
+    aut <- Plume$new(df_authors)
     aut$set_corresponding_authors(gallou, by = "family_name")
   }
 ```

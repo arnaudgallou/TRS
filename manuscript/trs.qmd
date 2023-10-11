@@ -29,7 +29,7 @@ csl: refs/nature.csl
 
 ## Authors
 
-`r aut$get_author_list(format = "^a^co")`
+`r aut$get_author_list(format = "^a^c")`
 
 ## Affiliations
 
@@ -38,7 +38,7 @@ csl: refs/nature.csl
 aut$get_affiliations() |> cat(sep = "\n\n")
 ```
 
-\*Corresponding author. Email: `r aut$get_contact_details("{details}")`
+\*e-mail: `r aut$get_contact_details("{details}")`
 
 ## Abstract
 
@@ -68,8 +68,8 @@ S.G.A.F. acknowledges support from Trond Mohn Stiftelse (TMS) and University of 
 
 ```{r}
 #| results: asis
-contributions <- aut$get_contributions(role_first = FALSE, name_list = TRUE)
-cat(contributions[c(1, 7, 2, 4, 5, 3, 8, 6)], sep = "; ")
+contributions <- aut$get_contributions(roles_first = FALSE, divider = " ")
+cat(contributions[c(1, 7, 3, 4, 2, 5, 8, 6)], sep = "; ")
 ```
 
 ## Competing interests

@@ -2,36 +2,15 @@ The Temperature Range Squeeze hypothesis
 ================
 
 - [Description](#description)
-- [Dependencies](#dependencies)
 - [Usage](#usage)
 - [Climate data](#climate-data)
+- [Dependencies](#dependencies)
 
 ## Description
 
-Repository to reproduce the analyses in the paper *“Diurnal temperature
-range as a key predictor of plants’ elevation ranges globally”*.
-
-## Dependencies
-
-Below are the different R packages required to run the code in this
-repository:
-
-- [tidyverse](https://www.tidyverse.org)
-- [TRS.utilities](https://github.com/arnaudgallou/TRS.utilities/)
-- [glue](https://glue.tidyverse.org)
-- [bayesplot](https://mc-stan.org/bayesplot/) (only for model
-  diagnostics)
-
-To install TRS.utilities, use:
-
-``` r
-# install.packages("pak")
-pak::pak("arnaudgallou/TRS.utilities")
-```
-
-In addition, you will need to have
-[JAGS](https://sourceforge.net/projects/mcmc-jags/) installed on your
-machine.
+Repository to reproduce the analyses in the paper *“[Diurnal temperature
+range as a key predictor of plants’ elevation ranges
+globally](https://www.nature.com/articles/s41467-023-43477-8)”*.
 
 ## Usage
 
@@ -257,3 +236,25 @@ settings as shown in the image below for `temperature` and
 `precipitation`:
 
 <img src="images/paleoview_settings.png" style="heigh: 639px; width: 556px"/></img>
+
+## Dependencies
+
+Below are the different R packages required to run the code in this
+repository:
+
+- [tidyverse](https://www.tidyverse.org)
+- [TRS.utilities](https://github.com/arnaudgallou/TRS.utilities/)
+- [glue](https://glue.tidyverse.org)
+- [bayesplot](https://mc-stan.org/bayesplot/) (only for model
+  diagnostics)
+
+To install TRS.utilities, use:
+
+``` r
+# install.packages("pak")
+pak::pak("arnaudgallou/TRS.utilities")
+```
+
+In addition, you will need to have
+[JAGS](https://sourceforge.net/projects/mcmc-jags/) installed on your
+machine.

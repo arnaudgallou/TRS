@@ -29,7 +29,7 @@ csl: refs/nature.csl
 
 ## Authors
 
-`r aut$get_author_list(format = "^a^c")`
+`r aut$get_author_list("^a^c")`
 
 ## Affiliations
 

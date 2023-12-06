@@ -95,7 +95,7 @@
                 !is.na(variety) ~ paste("var.", variety),
                 .default = infraspecies
               )
-              string_replace(out, r"{^\w+\.(?!\s)\K}", " ")
+              str_replace(out, r"{^\w+\.(?!\s)\K}", " ")
             },
             original_name = {
               out <- paste(

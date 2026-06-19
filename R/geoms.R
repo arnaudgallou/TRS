@@ -3,14 +3,14 @@
 #' @param axis Axis to draw the line on.
 #' @param linetype Line type.
 #' @param color Line color.
-#' @param size Line size (in mm).
+#' @param linewidth Line size (in mm).
 #' @param ... Other arguments passed on to [ggplot2::layer()].
 #' @export
 line_0 <- function(
   axis = c("x", "y"),
   linetype = "dashed",
   color = "grey50",
-  size = .3,
+  linewidth = .3,
   ...
 ) {
   axis <- match.arg(axis)
@@ -19,7 +19,7 @@ line_0 <- function(
     "{axis}intercept" := 0,
     linetype = linetype,
     color = color,
-    size = size,
+    linewidth = linewidth,
     ...
   )
   do.call(fun, args)

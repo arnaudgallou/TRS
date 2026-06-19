@@ -57,3 +57,19 @@ tag <- function(
     ...
   )
 }
+
+#' @export
+add_labels <- function(x = Inf, y = Inf, size = 10 / .pt) {
+  list(
+    geom_text(
+      aes(x, y, label = label, fontface = "bold"),
+      data = \(.data) {
+        out <- distinct(.data, expl_var, exclusion_zone)
+        mutate(out, label = letters[row_number()])
+      },
+      vjust = 1L,
+      hjust = 1L,
+      size = size,
+    )
+  )
+}

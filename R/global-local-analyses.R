@@ -4,14 +4,14 @@
 #' \dontrun{
 #'
 #' # Global scale analyses
-#' ga <- GlobalAnalyses$new(path)
+#' ga <- GlobalAnalyses$new(PATH_GLOBAL)
 #'
 #' ga$regressions(vars = "dtr", elev_span = 2500, excl_zone = 250, labels = "DTR")
 #'
 #' ga$posterior_distributions(vars = c("dtr", "ts"))
 #'
 #' # Local scale analyses
-#' la <- LocalAnalyses(path)
+#' la <- LocalAnalyses(PATH_LOCAL)
 #'
 #' la$slope_histograms()
 #' }
@@ -45,7 +45,7 @@ GlobalAnalyses <- R6::R6Class(
     #' @param by_land_type Should regressions be drawn for each land type?
     #' @param point_labels Should point labels be shown?
     regressions = function(
-      vars,
+      vars = c("dtr", "ts", "past_dmat"),
       elev_span = NULL,
       excl_zone = NULL,
       std_from = c("top", "bottom", "none"),
@@ -55,7 +55,10 @@ GlobalAnalyses <- R6::R6Class(
       by_land_type = FALSE,
       point_labels = FALSE
     ) {
-      fls <- private$fetch_jags(vars, elev_span, excl_zone, std_from)
+      if (isTRUE(point_labels) && isTRUE(by_land_type)) {
+        rlang::warn("`by_land_type` must be `FALSE` to show label points.")
+      }
+      fls <- private$fetch_jags(vars, elev_span, excl_zone, std_from, by_land_type)
       data <- make_regression_data(fls, by_land_type)
       plot_regressions(data, facet_cols, facet_rows, labels, point_labels = point_labels)
     },
@@ -88,7 +91,7 @@ GlobalAnalyses <- R6::R6Class(
       labels = NULL,
       reverse = FALSE,
       facet = TRUE,
-      fill = NULL
+      colors = NULL
     ) {
       if (is_true(facet)) {
         facet_args <- list(
@@ -103,25 +106,8 @@ GlobalAnalyses <- R6::R6Class(
       }
       fls <- private$fetch_jags(vars, elev_span, excl_zone, std_from)
       data <- make_posterior_data(fls, yvar, prob, prob_outer, scales, labels, reverse)
-      fill <- fill %||% rep("#5E8CBA", length(unique(data[[yvar]])))
-      plot_posterior_distributions(
-        data,
-        aes(
-          .data$x,
-          .data[[yvar]],
-          height = .data$y,
-          color = .data[[yvar]],
-          fill = .data[[yvar]]
-        ),
-        vline_color = "grey70",
-        vline_type = 2,
-        facet_args = facet_args
-      ) +
-        scale_fill_manual(values = fill) +
-        scale_color_manual(values = fill) +
-        scale_color_manual(values = colorspace::darken(fill, .5, "HLS")) +
+      plot_posterior_distributions(data, facet_args = facet_args, colors = colors) +
         xlab("Posterior parameter estimates") +
-        theme_blank_y() +
         theme(strip.placement = "outside")
     },
 
@@ -134,7 +120,7 @@ GlobalAnalyses <- R6::R6Class(
     #'   `none`. Use `none` for data that were not standardized.
     #' @return A tibble.
     eval_models = function(
-      vars = "all",
+      vars = NULL,
       elev_span = 2500,
       excl_zone = 250,
       std_from = c("top", "bottom", "none")
@@ -153,7 +139,7 @@ GlobalAnalyses <- R6::R6Class(
     #'   `none`. Use `none` for data that were not standardized.
     #' @return A tibble.
     get_statistical_details = function(
-      vars = "all",
+      vars = NULL,
       elev_span = NULL,
       excl_zone = NULL,
       std_from = c("top", "bottom", "none")
@@ -180,27 +166,8 @@ GlobalAnalyses <- R6::R6Class(
   private = list(
     path = NULL,
 
-    fetch_jags = function(
-      vars,
-      elev_span = NULL,
-      excl_zone = NULL,
-      std_from = c("top", "bottom", "none"),
-      ...
-    ) {
-      std_from <- match.arg(std_from)
-      if (rlang::is_string(vars) && vars == "all") {
-        vars <- ".+"
-      }
-      elev_span <- elev_span %||% "[^-]+"
-      excl_zone <- excl_zone %||% "[^-]+"
-      vars <- paste(vars, collapse = "|")
-      if (std_from == "none") {
-        tail <- ""
-      } else {
-        tail <- glue("-{std_from}")
-      }
-      fmt <- "(?:{vars})-span_{elev_span}-excl_{excl_zone}{tail}\\.rds"
-      list_files(private$path, target = glue(fmt), ...)
+    fetch_jags = function(...) {
+      fetch_jags(private$path, ...)
     }
   )
 )
@@ -235,7 +202,6 @@ LocalAnalyses <- R6::R6Class(
           position = "identity",
           binwidth = 2.5,
           color = "white",
-          size = .3
         ) +
         line_0("x") +
         scale_fill_manual(values = c("#006699", "#D4E5ED")) +
@@ -247,10 +213,9 @@ LocalAnalyses <- R6::R6Class(
 
     #' @description Plot the influence of elevation span on slope direction within
     #'   mountains.
-    #' @param trs Dataset containing elevation spans.
     #' @param excl_zone Size of the exclusion zone to use.
-    influence_elev_span = function(trs, excl_zone = 250) {
-      location_details <- private$get_location_details(trs)
+    influence_elev_span = function(excl_zone = 250) {
+      location_details <- private$get_location_details(load_data())
       out <- private$get_data_summary(excl_zone)
       out <- mutate(
         out,
@@ -259,26 +224,33 @@ LocalAnalyses <- R6::R6Class(
       )
       out <- left_join(out, location_details, by = "rowid")
       n_facets <- length(out$expl_var)
-      ggplot(out, aes(
-        .data$elev_span,
-        .data$y,
-        color = .data$expl_var,
-        fill = .data$expl_var,
-        alpha = .data$expl_var
-      )) +
+      ggplot(
+        out,
+        aes(
+          .data$elev_span,
+          .data$y,
+          color = .data$expl_var,
+          fill = .data$expl_var,
+          alpha = .data$expl_var
+        )
+      ) +
         ggh4x::facet_wrap2(
           vars(.data$expl_var),
           axes = "all",
           remove_labels = TRUE
         ) +
         line_0("y") +
-        geom_smooth(method = "lm", size = .5, color = "#85A9D6", fill = "#85A9D6") +
+        geom_smooth(
+          method = "lm",
+          linewidth = .5,
+          color = "#85A9D6",
+          fill = "#85A9D6"
+        ) +
         scale_alpha_manual(values = rep(.15, n_facets)) +
         labs(
           x = "Elevational gradient length (m)",
           y = "Mean slopes / SD slopes"
         )
-        # theme_elesic()
     },
 
     #' @description Summarize the proportion of positive and negative slopes based

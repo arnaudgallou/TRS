@@ -24,8 +24,8 @@
 plot_posterior_distributions <- function(
     data,
     scale = 1,
-    vline_type = 1,
-    vline_color = "grey90",
+    vline_type = 2,
+    vline_color = "grey70",
     facet_args = list(),
     colors = NULL,
     ...
@@ -50,9 +50,9 @@ plot_posterior_distributions <- function(
       ~ {
         base_rl_args <- list(data = filter(data, ci_id == .x), scale = scale)
         cond_rl_args <- if (.x != den_mass[n_mass]) {
-          c(alpha = .y, size = NA)
+          c(alpha = .y, linewidth = NA)
         } else {
-          c(fill = NA, size = .3)
+          c(fill = NA, linewidth = .3)
         }
         do.call(ggridges::geom_ridgeline, c(base_rl_args, cond_rl_args))
       }
@@ -65,12 +65,12 @@ plot_posterior_distributions <- function(
         yend = .data$ymin + .data$ymax
       ),
       data = df_seg,
-      size = 1
+      linewidth = 1
     ) +
     geom_segment(
       aes(x = .data$xmin, xend = .data$xmax, yend = .data$ymin),
       data = df_seg,
-      size = .3
+      linewidth = .3
     ) +
     theme(legend.position = "none")
 

@@ -105,7 +105,7 @@ plot_regressions_.draws <- function(
         data = draws,
         color = params$colors$draws,
         alpha = .1,
-        size = .25
+        linewidth = .25
       )
   }
   plot <- plot +
@@ -113,14 +113,15 @@ plot_regressions_.draws <- function(
       aes(slope = .data$mean_beta_2, intercept = .data$mean_beta_1),
       data = mean_draws,
       colour = params$colors$mean_draw,
-      size = if (point_labels) .25 else 1,
+      linewidth = if (point_labels) .25 else 1,
       alpha = if (point_labels) .7 else 1
     )
   if (is_false(point_labels)) {
-    plot <- plot + geom_errorbar(
-      aes(ymin = .data$se_min, ymax = .data$se_max),
-      size = .3
-    )
+    plot <- plot +
+      geom_errorbar(
+        aes(ymin = .data$se_min, ymax = .data$se_max),
+        linewidth = .3
+      )
   }
   plot <- plot + regression_points(params$colors, point_labels)
   if (is_true(point_labels)) {
@@ -157,7 +158,7 @@ plot_regressions_.land_types <- function(plot_data, plot, params, ...) {
     ggnewscale::new_scale_fill() +
     geom_errorbar(
       aes(ymin = .data$se_min, ymax = .data$se_max),
-      size = .3
+      linewidth = .3
     ) +
     regression_points(params$colors) +
     regression_theme(params$n_labels)

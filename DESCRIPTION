@@ -1,0 +1,22 @@
+Type: Package
+Package: trs
+Title: The Temperature Range Squeeze Hypothesis
+Version: 0.1.0
+Description: Code to reproduce the results behind the paper "Diurnal
+    temperature range as a key predictor of plants' elevation ranges
+    globally".
+Depends:
+    dplyr,
+    ggplot2,
+    glue,
+    purrr,
+    readr,
+    stringr,
+    tibble,
+    tidyr
+Imports:
+    rlang,
+    tidyselect
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

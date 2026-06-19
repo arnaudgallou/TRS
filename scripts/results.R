@@ -12,23 +12,13 @@ PATH_GLOBAL |>
 
 PATH_GLOBAL |>
   fetch_jags(
-    vars = "(dtr|ts|dmat)-land_type",
+    vars = c("dtr", "ts", "past_dmat"),
     elevation_span = 2500,
-    exclusion_zone = 250
+    exclusion_zone = 250,
+    land_type = TRUE
   ) |>
   make_regression_data(by_land_type = TRUE) |>
   plot_regressions()
-
-# ---- fig: regressions labelled ----
-
-PATH_GLOBAL |>
-  fetch_jags(
-    vars = c("dtr", "ts", "past_dmat"),
-    elevation_span = 2500,
-    exclusion_zone = 250
-  ) |>
-  make_regression_data() |>
-  plot_regressions(point_labels = TRUE)
 
 # ---- fig: posterior distributions ----
 
@@ -46,7 +36,6 @@ PATH_GLOBAL |>
     ),
   ) |>
   plot_posterior_distributions(
-    yvar = "exclusion_zone",
     vline_color = "grey70",
     vline_type = 2,
     facet_args = list(

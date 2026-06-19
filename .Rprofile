@@ -4,6 +4,7 @@ pkgload::load_all(export_all = FALSE, helpers = FALSE, quiet = TRUE)
 conflicted::conflicts_prefer(dplyr::filter())
 
 theme_set(theme_classic())
+theme_update(strip.background = element_blank())
 
 PATH_GLOBAL <- "data/jags/global-scale"
 PATH_LOCAL <- "data/jags/local-scale"

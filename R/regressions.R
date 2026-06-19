@@ -211,7 +211,6 @@ regression_theme <- function(n_labels) {
     theme(
       panel.spacing = unit(.5, "lines"),
       strip.placement = "outside",
-      strip.background = element_blank(),
       strip.text.y = element_blank(),
       strip.text.x = strip.text.x,
       axis.title.x = axis.title.x

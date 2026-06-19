@@ -80,7 +80,7 @@ GlobalAnalyses <- R6::R6Class(
     #' @param facet Should the plot be facetted?
     #' @param fill A vector of colors used to fill posterior distributions.
     posterior_distributions = function(
-      vars,
+      vars = c("dtr", "ts", "past_dmat"),
       elev_span = NULL,
       excl_zone = NULL,
       std_from = c("top", "bottom", "none"),

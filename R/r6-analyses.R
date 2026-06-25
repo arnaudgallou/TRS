@@ -15,11 +15,11 @@
 #'
 #' la$slope_histograms()
 #' }
-#' @name global_local_analyses
+#' @name r6-analyses
 NULL
 
 
-#' @rdname global_local_analyses
+#' @rdname r6-analyses
 #' @description NULL
 #' @export
 GlobalAnalyses <- R6::R6Class(
@@ -173,7 +173,7 @@ GlobalAnalyses <- R6::R6Class(
 )
 
 
-#' @rdname global_local_analyses
+#' @rdname r6-analyses
 #' @description NULL
 #' @export
 LocalAnalyses <- R6::R6Class(

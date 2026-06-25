@@ -1,0 +1,456 @@
+---
+bibliography:
+  - _references/main.bib
+  - _references/pkrt.bib
+fig-height: 6
+fig-width: 7.5
+nocite: |
+  @gilchrist1995
+---
+
+```{r}
+#| label: setup
+#| file: manuscript/_setup.R
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-map
+#| fig-height: 7.5
+#| fig-asp: !expr 1/2.070007
+#| fig-cap: "**Spatial distribution of the {{< env N_MOUNTAINS >}} mountains used in the study.** Colored points indicate elevation gradients < {{< env ELEV_SPAN_DEFAULT >}} m (red) and elevation gradients ≥ {{< env ELEV_SPAN_DEFAULT >}} m (blue)."
+# The map was created in R (version 4.0.2)^1^ using the ggplot2 (version 3.4.1)^2^ and rnaturalearth (version 0.1.0)^3^  packages.
+
+<<map: sites>>
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-map-rs
+#| fig-height: 7.5
+#| fig-asp: !expr 1/2.070007
+#| fig-cap: "**Mean species' elevation ranges in each mountain used in the study.** Colored points indicate elevation gradients < {{< env ELEV_SPAN_DEFAULT >}} m (red) and elevation gradients ≥ {{< env ELEV_SPAN_DEFAULT >}} m (blue)."
+# The map was created in R (version 4.0.2)^1^ using the ggplot2 (version 3.4.1)^2^ and rnaturalearth (version 0.1.0)^3^  packages.
+
+<<map: species range sizes>>
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-refs
+#| tbl-cap: "**Details about each of the {{< env N_MOUNTAINS >}} mountain gradients used in the study.** The elevation span is the difference between the highest and lowest elevation observation in a given mountain. The number of species is the number of species after naming homogenization."
+
+load_data() |>
+  summarise(.by = c(id_ref, location, region, elev_span, n_sp)) |>
+  mutate(location = str_replace_all(location, c(
+    "Mountains" = "Mts.",
+    "(?<=Mt\\b)" = ".",
+    "(?=Kenya)" = "Western "
+  ))) |>
+  arrange(location) |>
+  left_join(
+    googlesheets4::read_sheet(
+			Sys.getenv("GS_DATA"),
+			sheet = "refs"
+		),
+    by = "id_ref"
+  ) |>
+  rename(country = region) |>
+  separate_rows(country, sep = ", ") |>
+  mutate(
+    country = str_replace_all(country, c(
+      "Azores" = "Portugal",
+      "Pyrenees|Canary" = "Spain",
+      "Crete" = "Greece",
+      "Hawaii" = "USA",
+      "Socotra" = "Yemen",
+      "Tasmania" = "Australia"
+    )),
+    iso = countrycode::countrycode(country, "country.name", "iso3c"),
+    reference = str_replace_all(reference, c(" " = ";", "^" = "[", "$" = "]"))
+  ) |>
+  summarise(
+    iso = paste(iso, collapse = ", "),
+    .by = c(location, reference, elev_span, n_sp)
+  ) |>
+  select(location, iso, elev_span, n_sp, reference) |>
+  rename_with(\(name) {
+    out <- str_replace_all(name, pattern = c(
+      "^elev.+" = "elevation span (m)",
+      "^n_.+" = "no. of species",
+      "^iso" = "alpha-3 ISO"
+    ))
+    uc_first(out)
+  }) |>
+  knitr::kable(format = "simple", align = "lcccr")
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-spaghetti-main-lower
+#| fig-height: 2.8
+#| fig-cap: "**Response of mean species' elevation ranges to diurnal temperature range (a), temperature seasonality (b) and the variation of mean annual temperature from 0 to 1980 AD (c) using standardized elevation gradients from lower elevations.** Points represent the estimated mean elevation ranges with their respective standard error in each of the {{< env N_MOUNTAINS_MAIN >}} standardized elevation gradients ≥ {{< env ELEV_SPAN_DEFAULT >}} m in length. Thick blue lines are the posterior mean calculated from {{< env N_DRAWS >}} random draws sampled from the {{< env CI_DEFAULT >}}% credible interval (thin blue lines). Colored dots indicate island (white) and continental (dark gray) mountains. Source data are provided as a Source Data file."
+
+theme_update(axis.text = element_text(size = 10))
+
+ga$regressions(
+  elev_span = ELEV_SPAN_DEFAULT,
+  std_from = "bottom",
+  labels = labels,
+) +
+  facet_tags() +
+  theme(strip.text.x = element_text(size = 11))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-spaghetti-all-1
+#| fig-cap: !expr paste("**Response of mean species' elevation ranges to diurnal temperature range, temperature seasonality and the variation of mean annual temperature from 0 to 1980 AD using a standardized elevation span of {{< env ELEV_SPAN_MIN >}} m.**", caption_reg)
+
+caption_reg <- "The different panels show the responses of species' range sizes to each temperature variation predictor using all species (**a-c**) and after discarding species found exclusively in the upper and lower 250 m (**a-f**) and 500 m (**g-i**) of the elevation gradient. Thick blue lines are the posterior mean calculated from {{< env N_DRAWS >}} random draws sampled from the {{< env CI_DEFAULT >}}% credible interval (thin blue lines). Colored dots indicate island (white) and continental (dark gray) mountains. Each elevation gradient length was standardized from upper elevations. Source data are provided as a Source Data file."
+
+ga$regressions(elev_span = ELEV_SPANS[1], labels = labels) +
+  facet_tags() +
+  theme(strip.text.x = element_text(size = 11))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-spaghetti-all-2
+#| fig-cap: !expr paste("**Response of mean species' elevation ranges to diurnal temperature range, temperature seasonality and the variation of mean annual temperature from 0 to 1980 AD using a standardized elevation span of {{< env ELEV_SPAN_MID >}} m.**", caption_reg)
+
+ga$regressions(elev_span = ELEV_SPANS[2], labels = labels) +
+  facet_tags() +
+  theme(strip.text.x = element_text(size = 11))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-spaghetti-all-3
+#| fig-cap: !expr paste("**Response of mean species' elevation ranges to diurnal temperature range, temperature seasonality and the variation of mean annual temperature from 0 to 1980 AD using a standardized elevation span of {{< env ELEV_SPAN_DEFAULT >}} m.**", caption_reg)
+
+ga$regressions(elev_span = ELEV_SPAN_DEFAULT, labels = labels) +
+  facet_tags() +
+  theme(strip.text.x = element_text(size = 11))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-posterior-distributions
+#| fig-height: 5
+#| fig-width: 5
+#| fig-cap: "**Posterior distributions from the global-scale analyses for diurnal temperature range (DTR), temperature seasonality (TS) and the variation of mean annual temperature from 0 to 1980 AD (∆MAT~0-1980~).** The plots show the median values of the regression coefficients (vertical thick lines) with the {{< env CI_MIN >}}% (dark shading), {{< env CI_DEFAULT >}}% (light shading) and {{< env CI_MAX >}}% (outlines) credible intervals for standardized elevation gradient length of {{< env ELEV_SPAN_ALL >}} m. Colors indicate analyses with exclusion zones of {{< env EXCL_MAX >}} m (yellow), {{< env EXCL_MID >}} m (red) and {{< env EXCL_MIN >}} m (blue)."
+
+ga$posterior_distributions(
+  scales = c(dtr = .013, ts = .018, past_dmat = .2),
+  colors = c("#5E8CBA", "#CB624D", "#F5B83D"),
+  labels = c(
+    dtr = "beta[DTR]",
+    ts = "beta[TS]",
+    past_dmat = "beta[Delta*MAT[0-1980]]"
+  ),
+) +
+  theme(
+    strip.placement = "outside",
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    strip.text = element_text(size = size$title),
+    axis.title = element_text(size = size$title),
+    axis.title.y = element_blank(),
+    axis.text = element_text(size = size$text),
+    axis.text.y = element_blank(),
+  )
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-models
+#| tbl-cap: "**Results of the model selection.** ∆WAIC and ∆LOO are the relative difference in information criterion between a given and the best model. WAIC and LOO values are from models using standardized gradient length (from upper elevations) and exclusion zones of 2500 m and 250 m, respectively. DTR: diurnal temperature range; TS: temperature seasonality; MAT: mean annual temperature; AP: annual precipitation; ∆MAT~0-1980~: temperature variation from 0 to 1980 AD; MAP~0-1980~: mean annual precipitation from 0 to 1980 AD."
+
+ga$eval_models(
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+) |>
+  select(-matches("span|excl|from")) |>
+  mutate(
+    model = str_replace_all(model, "(dtr|ts|\\b(?:ap|mat))", str_to_upper),
+    model = str_replace_all(
+      model,
+      c(
+        "_" = " ",
+        "past dmat" = "\u0394MAT$_{0-1980}$",
+        "past map" = "MAP$_{0-1980}$"
+      )
+    )
+  ) |>
+  rename_with(\(col) {
+    out <- str_replace_all(col, "waic|looic", str_to_upper)
+    out <- str_replace_all(out, "delta_", "\u0394")
+    uc_first(out)
+  }) |>
+  kableExtra::kbl(
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = "\\addlinespace",
+    digits = 2
+  ) |>
+  kableExtra::kable_styling(latex_options = "striped")
+```
+
+{{< pagebreak >}}
+
+\
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-statistical-details
+#| tbl-cap: "**Statistical details of the global-scale analyses.** Multiple values in the $P(β < 0)$ column are the $P(β < 0)$ of the first, second and the interaction of the two predictors, respectively. DTR: diurnal temperature range; TS: temperature seasonality; MAT: mean annual temperature; AP: annual precipitation; ∆MAT~0-1980~: temperature variation from 0 to 1980 AD; MAP~0-1980~: mean annual precipitation from 0 to 1980 AD. Statistics are from models using standardized elevation gradients from upper elevations."
+
+ga$get_statistical_details() |>
+  mutate(
+    model = model |>
+      str_replace_all(c(
+        "past_dmat" = "\u0394MAT$_{0-1980}$",
+        "past_map" = "MAP$_{0-1980}$",
+        "(?<=land)_" = " ",
+        "_(?!\\{)" = " * "
+      )) |>
+      str_replace_all("(dtr|ts|(?<= )(?:ap|mat))", str_to_upper)
+  ) |>
+  unite("$P(\\beta < 0)$", matches("beta"), sep = "; ", na.rm = TRUE) |>
+  rename_with(\(x) {
+    out <- str_replace_all(x, c(
+      "r_squared" = "$R^2$",
+      "std_error" = "SE",
+      "(?<=zone|span)" = " (m)",
+      "_(?=zone|span)" = "\n",
+      "_" = " "
+    ))
+    uc_first(out)
+  }) |>
+  kableExtra::kbl(
+    booktabs = TRUE,
+    escape = FALSE,
+    longtable = TRUE,
+    align = c("l", rep("r", 5)),
+    linesep = "\\addlinespace"
+  ) |>
+  kableExtra::column_spec(column = c(2, 3, 5), width = "5em") |>
+  kableExtra::kable_styling(latex_options = c("striped", "repeat_header"))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-spaghetti-main-labelled
+#| fig-height: 2.8
+#| fig-width: 7.5
+#| fig-cap: !expr glue("**Names of the elevation gradients as shown in Fig. 2.** Response of mean species' elevation ranges to diurnal temperature range (**a**), temperature seasonality (**b**) and the variation of mean annual temperature from 0 to 1980 AD (**c**) using standardized elevation gradients of {{< env ELEV_SPAN_DEFAULT >}} m and exclusion zones of {{< env EXCL_MID >}} m. Standardization was performed from upper elevations. Colors indicate continental (orange) and island (blue) mountains.\n[location_list]", .open = "[", .close = "]")
+
+location_list <- trs |>
+  filter(elev_span >= ELEV_SPAN_DEFAULT) |>
+  distinct(location) |>
+  mutate(
+    location = location |>
+      stringr::str_replace_all(c(
+        "Mountains" = "Mts.",
+        "(?<=Mt\\b)" = ".",
+        "(?<=Sierra Nevada)" = " (Spain)",
+        "(?=Kenya)" = "Western "
+      )) %>%
+      paste0(row_number(), ": ", .)
+  ) |>
+  pull() |>
+  paste(collapse = "; ")
+
+ga$regressions(
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+  point_labels = TRUE,
+  labels = labels,
+) +
+  facet_tags() +
+  theme(strip.text.x = element_text(size = 11))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-influence-mountain-height
+#| fig-height: 4.5
+#| fig-width: 7.5
+#| fig-cap: "**Response of species' range sizes to full elevation spans (difference between the highest and lowest observation in any given mountain) in island and continental mountains.** Top panels show the influence of full elevation spans on species' range sizes estimated from models using no standardization and no exclusion zones for elevation spans ≥ 1500 m (**a**), ≥ 2000 m (**b**) and ≥ 2500 m (**c**). Bottom panels show the influence of full elevation spans on species' range sizes estimated from models using standardized elevation gradients of 1500 m (**d**), 2000 m (**e**) and 2500 m (**f**) and exclusion zones of 250 m. Standardization was performed from upper elevations. These plots show that the standardization minimized the influence of elevation spans and effectively accounted for mountain heights. Island mountains (white dots, blue regressions) have larger mean species' ranges than continental mountains (dark gray dots, orange regressions) due to different short-term temperature variation. Source data are provided as a Source Data file."
+
+ga$regressions(
+	vars = "mountain_height",
+  excl_zone = ".+",
+	facet_cols = "elevation_span",
+	std_from = "none",
+	by_land_type = TRUE,
+	labels = "Full elevation span (m)",
+) +
+  facet_tags()
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-conceptual-gilchrist
+#| fig-height: 2.8
+#| fig-width: 3.6
+#| fig-cap: "**Illustration of Gilchrist's hypothesis in mountains with low within-generation variation but variable among-generation variation.** Assuming that individuals can survive any temperatures, Gilchrist's hypothesis links the reproductive success of individuals to performance breadth (i.e. the suitable temperatures for a population to produce the next generation; represented here by the shaded blue areas). Shaded red areas represent elevations where individuals can survive but cannot reproduce due to unfavorable conditions, thereby being unable to sustain a population over successive generations. Under such assumptions, and in the absence of other factors, a species will occupy the full range of temperatures corresponding to its performance breadth."
+
+gilchrist <- GlobalAnalyses$new("data/jags/global-scale/gilchrist")
+coef <- 2
+
+make_conceptual_fig("gilchrist", label_size = (10 - coef) / .pt) +
+  theme(
+    axis.title.y = element_text(size = 11 - coef),
+    axis.text.x = element_text(size = 11 - coef),
+    axis.text.y = element_text(size = 10 - coef),
+  )
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-regressions-gilchrist
+#| fig-height: 2.8
+#| fig-cap: !expr glue("**Response of mean species’ elevation ranges to the variation of mean annual temperature from 0 to 1980 AD for elevation gradients with low within-generation variation (lowest third of the diurnal temperature range gradient).** Settings of these analyses are similar to that of the first column of Fig. 4 in Gilchrist^60^, which shows that the influence of among-generation variation on species’ performance breadth is stronger when within-generation variation is low. The different panels show the responses of species' range sizes for standardized elevation gradients of {enumerate(paste(ELEV_SPANS, glue('m (**{letters[1:3]}**)')))} with exclusion zones of {{{{< env EXCL_MID >}}}} m. Thick lines are the posterior mean calculated from {{{{< env N_DRAWS >}}}} random draws sampled from the {{{{< env CI_DEFAULT >}}}}% credible interval (thin blue lines). Colored dots indicate island (white) and continental (dark gray) mountains. Each elevation gradient was standardized from upper elevations. Source data are provided as a Source Data file.")
+
+gilchrist$regressions(
+  vars = "past_dmat",
+  excl_zone = EXCL_DEFAULT,
+  facet_cols = "elevation_span",
+  labels = "∆ mean annual temperature (0-1980) (°C)",
+) +
+  scale_x_continuous(breaks = seq(.5, .9, .2)) +
+  facet_tags()
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-gilchrist
+#| fig-height: 2.8
+#| fig-width: 3
+#| fig-cap: "**Posterior distributions from the variation of mean annual temperature from 0 to 1980 AD for mountain gradients with low within-generation variation (lowest third of the diurnal temperature range gradient).** The plots show the median values of the regression coefficients (vertical thick lines) with the {{< env CI_MIN >}}% (outlines) credible intervals for standardized elevation gradient length of {{< env ELEV_SPAN_ALL >}} m. Dashed line indicates 0."
+
+gilchrist$posterior_distributions(
+  vars = "past_dmat",
+  excl_zone = EXCL_DEFAULT,
+  yvar = "elevation_span",
+  facet = FALSE,
+  reverse = TRUE,
+  scales = .6,
+  prob = CI[1:2],
+  prob_outer = CI[3]
+) +
+  theme(
+    strip.text.x = element_blank(),
+    strip.text.y = element_text(size = 11 - coef),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title = element_text(size = 11 - coef),
+    axis.title.y = element_blank(),
+    axis.text.y = element_text(),
+    axis.text = element_text(size = 10 - coef),
+  )
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-thermal-variability-range
+#| fig-height: 2.8
+#| fig-width: 3
+#| fig-cap: "**Range of thermal variability within mountains.** The thermal range corresponds to the difference between the maximum and minimum values for diurnal temperature range and temperature seasonality within each elevation gradient."
+
+{
+  <<fig: thermal variability range>>
+} +
+  theme(
+    axis.title = element_text(size = 11 - coef),
+    axis.text = element_text(size = 10 - coef),
+  )
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-histogram-slopes-all
+#| fig-height: 5.5
+#| fig-width: 5
+#| fig-cap: "**Responses of species' elevation ranges to diurnal temperature range (a, c, e) and temperature seasonality (b, d, f) within each {{< env N_MOUNTAINS >}} mountains used in the study.** The different panels indicate analyses performed using all species (**a-b**) and after discarding species found exclusively in the upper and lower {{< env EXCL_MID >}} m (**c-d**) and {{< env EXCL_MAX >}} m (**e-f**) of the elevation gradients. Histograms are of mean slope terms divided by their standard deviation from the {{< env CI_DEFAULT >}}% credible interval for the local-scale analyses. Colors indicate whether the {{< env CI_DEFAULT >}}% credible interval includes 0 (light blue) or not (dark blue). Dashed lines indicate 0. Source data are provided as a Source Data file."
+
+la$slope_histograms() +
+  scale_y_continuous(breaks = seq(0, 12, 3)) +
+  facet_tags() +
+  theme(
+    panel.spacing.y = unit(5, "mm"),
+    strip.text = element_blank(),
+    axis.title = element_text(size = size$title),
+    axis.text = element_text(size = size$text),
+  )
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig-influence-gradient-length
+#| fig-height: 2.4
+#| fig-width: 5
+#| fig-cap: "**Influence of elevation gradient length on slope direction within mountains for temperature seasonality (a) and diurnal temperature range (b).**"
+
+la$influence_elev_span(excl_zone = 250) +
+  scale_x_continuous(breaks = seq(0, 6000, 2000)) +
+  facet_tags() +
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_text(size = size$title),
+    axis.text = element_text(size = size$text),
+  )
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-slopes-summary
+#| tbl-cap: "**Ratio of positive and negative slope estimates (in %) for the local-scale analyses.**"
+
+la$tbl_slope_summary() |>
+  mutate(model = toupper(model)) |>
+  rename_with(stringr::str_replace_all, pattern = c(
+    "(?<=zone)" = " (m)",
+    "_" = " ",
+    "(?<=exclusion) " = "\n",
+    "positive" = "pos.",
+    "negative" = "neg."
+  )) |>
+  rename_with(uc_first) |>
+  kableExtra::kbl(booktabs = TRUE, linesep = "\\addlinespace") |>
+  kableExtra::column_spec(column = 2, width = "5em") |>
+  kableExtra::column_spec(column = 5:8, width = "6em") |>
+  kableExtra::kable_styling(latex_options = "striped")
+```
+
+{{< pagebreak >}}
+
+\
+
+{{< pagebreak >}}
+
+## Supplementary References
+
+::: {#refs}
+:::

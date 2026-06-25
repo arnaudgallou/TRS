@@ -1,10 +1,9 @@
-The Temperature Range Squeeze hypothesis
-================
 
-- [Description](#description)
-- [Usage](#usage)
-- [Climate data](#climate-data)
-- [Dependencies](#dependencies)
+
+> \[!INFO\]  
+> This project was updated to improve reproducibility. The versions of R
+> and R packages may differ from those used in the original paper, but
+> they do not affect the results.
 
 ## Description
 
@@ -12,65 +11,86 @@ Repository to reproduce the analyses in the paper *“[Diurnal temperature
 range as a key predictor of plants’ elevation ranges
 globally](https://www.nature.com/articles/s41467-023-43477-8)”*.
 
+## Prerequisites
+
+This project uses R 4.4.1. If you’re already using R 4.4.1, you can
+proceed to the next section. Otherwise, follow the steps below:
+
+1.  Install
+    [rig](https://github.com/r-lib/rig?tab=readme-ov-file#%EF%B8%8F-installing-rig-)
+    (this is an R installation manager that lets you run projects with
+    specific R versions).
+2.  Run `rig add 4.4.1` in your command prompt or terminal.
+3.  Set the R version to 4.4.1 using `rig switch <version-name>` (you
+    can check installed versions and names with `rig list`).
+
 ## Usage
 
-Simply use the `main.R` file to run all the analyses performed in the
-manuscript.
+Clone or download this repository and follow one of the two workflows
+below.
 
-You can run multiple models automatically using a set of `for` loops.
-For example:
+1.  Download the data at https://osf.io/d42jq.
 
-``` r
-# global-scale analyses
+2.  Save the datasets below data/.
 
-model <- load_model(scope = "global")
+3.  Open mtPhylo.Rproj.
 
-for (expr in c(~dtr, ~ts, ~past_dmat)) {
-  for (elevation_span in ELEV_SPANS) {
-    for (exclusion_zone in EXCLS) {
-      mdl_data <- compile_mdl_data(
-        trs,
-        clim_data = trs_bioclim,
-        elevation_span = elevation_span,
-        exclusion_zone = exclusion_zone,
-        singleton_thr = SINGLETON_THR,
-        std_elev_grad = TRUE,
-        average = TRUE,
-        std_from = "top",
-        cols = c("location", "sp_range", "land_type"),
-        expr = expr
-      )
-      
-      run_jags(
-        mdl_data,
-        model = model,
-        n.iter = JAGS_ITER,
-        n.thin = JAGS_THIN,
-        n.chains = JAGS_CHAINS,
-        n.burnin = JAGS_BURN_IN,
-        save = TRUE,
-        path = glue("data/jags/{model$scope}-scale/")
-      )
-      
-      gc() # to free up RAM
+4.  Run renv::restore() to install the required dependencies.
+
+5.  Use `analyses.R` to run all the analyses performed in the
+    manuscript.
+
+    You can run multiple models automatically using a set of `for`
+    loops. For example:
+
+    ``` r
+    # global-scale analyses
+
+    model <- load_model(scope = "global")
+
+    for (expr in c(~dtr, ~ts, ~past_dmat)) {
+      for (elevation_span in ELEV_SPANS) {
+        for (exclusion_zone in EXCLS) {
+          mdl_data <- compile_mdl_data(
+            trs,
+            clim_data = trs_bioclim,
+            elevation_span = elevation_span,
+            exclusion_zone = exclusion_zone,
+            singleton_thr = SINGLETON_THR,
+            std_elev_grad = TRUE,
+            average = TRUE,
+            std_from = "top",
+            cols = c("location", "sp_range", "land_type"),
+            expr = expr
+          )
+
+          run_jags(
+            mdl_data,
+            model = model,
+            n.iter = JAGS_ITER,
+            n.thin = JAGS_THIN,
+            n.chains = JAGS_CHAINS,
+            n.burnin = JAGS_BURN_IN,
+            save = TRUE,
+            path = glue("data/jags/{model$scope}-scale/")
+          )
+
+          gc() # to free up RAM
+        }
+      }
     }
-  }
-}
-```
+    ```
 
-Note that the `expr` parameter in `compile_mdl_data()` takes a
-**formula** for the global-scale analyses and a **character string** for
-the local-scale analyses.
+    Note that the `expr` parameter in `compile_mdl_data()` takes a
+    **formula** for the global-scale analyses and a **character string**
+    for the local-scale analyses.
 
-A list of the different models ran in the manuscript can be found
-[below](#models).
+    A list of the different models ran in the manuscript can be found
+    [below](@sec-models).
 
-Once the models have finished running, use:
+6.  Run `results.R` to plot model estimates and get model statistics.
 
-- `results.R` to plot model estimates and get model statistics
-- `mdl_diagnostics.R` to perform model diagnostics
-
-<a name="models" />
+7.  Run `diagnosis.R` to perform model diagnostics.
 
 ### Models
 
@@ -109,7 +129,7 @@ for (elevation_span in ELEV_SPANS) {
     cols = c("location", "sp_range", "land_type"),
     expr = ~past_dmat
   )
-  
+
   run_jags(
     mdl_data,
     model = model,
@@ -150,14 +170,14 @@ Climate data are already provided in the `trs.csv` data set.
 If you would like to perform GIS analyses again, proceed as follows:
 
 1.  Open `TRS.Rproj` and execute the following function in the console:
-    `TRS.utilities::setup_gis()`. The function will create all the
-    required directories to store SRTM and climate-related data.
+    `setup_gis()`. The function will create all the required directories
+    to store SRTM and climate-related data.
 2.  Download [bioclim](https://chelsa-climate.org/downloads/) and
     [digital elevation](https://earthexplorer.usgs.gov) data (as `.tif`)
     as well as
-    [PaleoView](https://github.com/GlobalEcologyLab/PaleoView/releases).
-    See [here](#paleoview) for instructions to generate past climate
-    data.
+    [PaleoView](https://github.com/GlobalEcologyLab/PaleoView/releases)
+    (v. 1.5.1). See [here](#paleoview) for instructions to generate past
+    climate data.
 3.  Save each file in the appropriate folder (see file tree below).
 4.  Once all the files are in their respective folders, use the `gis.R`
     script to extract present and past climate data in each location.
@@ -239,22 +259,6 @@ settings as shown in the image below for `temperature` and
 
 ## Dependencies
 
-Below are the different R packages required to run the code in this
-repository:
-
-- [tidyverse](https://www.tidyverse.org)
-- [TRS.utilities](https://github.com/arnaudgallou/TRS.utilities/)
-- [glue](https://glue.tidyverse.org)
-- [bayesplot](https://mc-stan.org/bayesplot/) (only for model
-  diagnostics)
-
-To install TRS.utilities, use:
-
-``` r
-# install.packages("pak")
-pak::pak("arnaudgallou/TRS.utilities")
-```
-
-In addition, you will need to have
-[JAGS](https://sourceforge.net/projects/mcmc-jags/) installed on your
+The analyses require that
+[JAGS](https://sourceforge.net/projects/mcmc-jags/) is installed on your
 machine.

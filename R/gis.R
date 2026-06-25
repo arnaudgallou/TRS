@@ -1,87 +1,86 @@
-####  Init  ####
-  {
-    source("R/init.R")
+#' @title Read a raster object
+#' @description Alias for [`terra::rast`].
+#' @param x A single or collection of file names.
+#' @param ... Arguments to pass on to [`terra::rast()`].
+#' @export
+rs_read <- function(x, ...) {
+  UseMethod("rs_read")
+}
 
-    dem_folders <- list_files("gis/srtm", names = extract_file_name)
+#' @export
+rs_read.character <- function(x, ...) {
+  terra::rast(x, ...)
+}
+
+#' @export
+rs_read.collection <- function(x, ...) {
+  class(x) <- "character"
+  out <- terra::rast(x, ...)
+  if (all(have_name(x))) {
+    out <- stats::setNames(out, names(x))
   }
+  out
+}
 
-####  Bioclim (present)  ####
-  {
-    bioclim <- "gis/clim/data/present" |>
-      list_files(TIF, names = \(file) {
-        out <- basename(file)
-        out <- str_remove(out, "10_0?")
-        str_extract(out, "bio\\d+")
-      }) |>
-      rs_read()
+#' @title Convert a raster extent to a polygon
+#' @description Convert a raster extent to a polygon.
+#' @param x A raster object.
+#' @export
+rs_ext_to_polygon <- function(x) {
+  x <- terra::ext(x)
+  x <- terra::as.polygons(x)
+  rs_set_crs(x)
+}
 
-    walk(dem_folders, \(folder) {
-      location <- extract_file_name(folder, to_snake_case = TRUE)
+#' @title Set the minimum and maximum values of a raster object
+#' @description Remove missing values and set the minimum and maximum values of
+#'   a raster object.
+#' @param x A raster object.
+#' @export
+rs_set_range <- function(x) {
+  terra::NAflag(x) <- -1
+  terra::setMinMax(x)
+}
 
-      folder |>
-        list_files(TIF, names = \(file) {
-          str_extract(dirname(file), "[^/]+$")
-        }) |>
-        map(\(file) {
-          dem <- rs_read(file)
-          dem <- rs_set_range(dem)
-          dem <- rs_filter(dem, dem > 0)
-          rs_reclass(dem, binwidth = ELEV_BIN_WIDTH, col_name = "elev_band")
-        }) |>
-        map(\(dem) {
-          clim <- rs_crop(bioclim, dem, snap = "out")
-          clim <- rs_resample(clim, dem)
-          clim <- rs_zonal(clim, dem, fun = "mean", na.rm = TRUE)
-          as_tibble(clim)
-        }) |>
-        list_rbind(names_to = "location") |>
-        mutate(
-          across(starts_with("bio"), mean),
-          .by = elev_band
-        ) |>
-        distinct(elev_band, .keep_all = TRUE) |>
-        write_csv(glue("gis/clim/extracted/present/{location}-bioclim.csv"))
-    }, .progress = TRUE)
-  }
+#' @title Reclassify a raster object
+#' @description Divide values of a raster object into bins of a given width.
+#' @param x A raster object.
+#' @param binwidth The width of the bins.
+#' @param right Should bin intervals be closed on the right? See [`terra::classify()`]
+#'   for details.
+#' @param col_name Name of the classified variable.
+#' @param ... Other arguments passed to [`terra::classify()`].
+#' @export
+rs_reclass <- function(x, binwidth = 100, right = FALSE, col_name = "zone", ...) {
+  min <- round_nearest(terra::minmax(x)[1], -binwidth)
+  max <- round_nearest(terra::minmax(x)[2], -binwidth)
+  s <- seq(min, max, binwidth)
+  new_values <- tibble(lower = s, upper = s + binwidth, new = s)
+  x <- terra::classify(x, new_values, right = right, ...)
+  stats::setNames(x, col_name)
+}
 
-####  Bioclim (past)  ####
-  {
-    polygons <- dem_folders |>
-      map(\(folder) {
-        fls <- list_files(folder, TIF)
-        map(fls, \(file) {
-          out <- rs_read(file)
-          rs_ext_to_polygon(out)
-        })
-      }) |>
-      map(rs_vect)
+#' @title WGS84 coordinate reference system
+#' @description WGS84 coordinate reference system.
+#' @export
+WGS84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 
-    "gis/clim/data/past/var" |>
-      list_files(
-        target = "mean",
-        names = partial(extract_file_name, to_snake_case = TRUE)
-      ) |>
-      map(\(folder) {
-        out <- list_files(folder, ASC, recursive = TRUE, names = \(file) {
-          parse_number(basename(file))
-        })
-        out <- rs_read(out)
-        rs_set_crs(out)
-      }) |>
-      imap(\(raster, name) {
-        clim <- map(polygons, \(polygon) {
-          out <- rs_extract(raster, polygon, fun = mean)
-          out <- summarise(out, across(-ID, mean))
-          pivot_longer(out, everything(), names_to = "time", values_to = name)
-        })
-        list_rbind(clim, names_to = "location")
-      }) |>
-      reduce(left_join, by = c("location", "time")) |>
-      summarise(
-        past_dmat = max(mean_temperature) - min(mean_temperature),
-        past_map = mean(mean_precipitation),
-        .by = location
-      ) |>
-      arrange(location) |>
-      write_csv("gis/clim/extracted/past/bioclim_0-1980.csv")
-  }
+#' @title Set the coordinate reference system of a raster object
+#' @description Set the coordinate reference system of a raster object.
+#' @param x A aster object.
+#' @param proj Projection to set to the raster object.
+#' @export
+rs_set_crs <- function(x, proj = WGS84) {
+  terra::crs(x) <- proj
+  x
+}
+
+#' @title Subset values from a raster object
+#' @description Wrapper around [`terra::mask()`] to subset values from a raster
+#'   object.
+#' @param x A raster object.
+#' @param ... Expression that returns a logical value.
+#' @export
+rs_filter <- function(x, ...) {
+  terra::mask(x, mask = ..., maskvalue = 0)
+}

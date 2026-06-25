@@ -208,7 +208,6 @@ LocalAnalyses <- R6::R6Class(
         scale_y_continuous(breaks = seq(0, 12, 3)) +
         labs(x = "Mean slopes / SD slopes", y = "Count") +
         coord_cartesian(expand = FALSE)
-        # theme_elesic()
     },
 
     #' @description Plot the influence of elevation span on slope direction within

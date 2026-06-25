@@ -59,17 +59,24 @@ tag <- function(
 }
 
 #' @export
-add_labels <- function(x = Inf, y = Inf, size = 10 / .pt) {
-  list(
-    geom_text(
-      aes(x, y, label = label, fontface = "bold"),
-      data = \(.data) {
-        out <- distinct(.data, expl_var, exclusion_zone)
-        mutate(out, label = letters[row_number()])
-      },
-      vjust = 1L,
-      hjust = 1L,
-      size = size,
-    )
+facet_tags <- function(x = Inf, y = Inf, size = 10 / .pt) {
+  structure(
+    list(x = x, y = y, size = size),
+    class = "facet_tags"
   )
+}
+
+#' @export
+ggplot_add.facet_tags <- function(object, plot, object_name) {
+  layout <- ggplot2::ggplot_build(plot)$layout$layout
+  data <- mutate(layout, label = letters[row_number()])
+  plot +
+    ggplot2::geom_text(
+      data = data,
+      ggplot2::aes(object$x, object$y, label = label, fontface = "bold"),
+      inherit.aes = FALSE,
+      hjust = 1L,
+      vjust = 1L,
+      size = object$size
+    )
 }

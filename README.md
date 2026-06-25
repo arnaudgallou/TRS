@@ -1,6 +1,6 @@
 
 
-> \[!INFO\]  
+> \[!NOTE\]  
 > This project was updated to improve reproducibility. The versions of R
 > and R packages may differ from those used in the original paper, but
 > they do not affect the results.
@@ -31,11 +31,11 @@ below.
 
 1.  Download the data at https://osf.io/d42jq.
 
-2.  Save the datasets below data/.
+2.  Save the datasets below `data/`.
 
-3.  Open mtPhylo.Rproj.
+3.  Open `mtPhylo.Rproj`.
 
-4.  Run renv::restore() to install the required dependencies.
+4.  Run `renv::restore()` to install the required dependencies.
 
 5.  Use `analyses.R` to run all the analyses performed in the
     manuscript.
@@ -86,7 +86,7 @@ below.
     for the local-scale analyses.
 
     A list of the different models ran in the manuscript can be found
-    [below](@sec-models).
+    below.
 
 6.  Run `results.R` to plot model estimates and get model statistics.
 
@@ -176,8 +176,8 @@ If you would like to perform GIS analyses again, proceed as follows:
     [digital elevation](https://earthexplorer.usgs.gov) data (as `.tif`)
     as well as
     [PaleoView](https://github.com/GlobalEcologyLab/PaleoView/releases)
-    (v. 1.5.1). See [here](#paleoview) for instructions to generate past
-    climate data.
+    (v. 1.5.1). See the *generating past climate data* section for
+    instructions to generate past climate data.
 3.  Save each file in the appropriate folder (see file tree below).
 4.  Once all the files are in their respective folders, use the `gis.R`
     script to extract present and past climate data in each location.
@@ -242,8 +242,6 @@ If you would like to perform GIS analyses again, proceed as follows:
         ├── Utah
         ├── Venezuelan Andes
         └── Wind River Mountains
-
-<a name="paleoview" />
 
 ### Generating past climate data
 

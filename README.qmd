@@ -7,7 +7,7 @@ engine: knitr
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
-> [!INFO]\
+> [!NOTE]\
 > This project was updated to improve reproducibility. The versions of R and R packages may differ from those used in the original paper, but they do not affect the results.
 
 ## Description
@@ -27,9 +27,9 @@ This project uses R 4.4.1. If you're already using R 4.4.1, you can proceed to t
 Clone or download this repository and follow one of the two workflows below.
 
 @. Download the data at https://osf.io/d42jq.
-@. Save the datasets below data/.
-@. Open mtPhylo.Rproj.
-@. Run renv::restore() to install the required dependencies.
+@. Save the datasets below `data/`.
+@. Open `mtPhylo.Rproj`.
+@. Run `renv::restore()` to install the required dependencies.
 @. Use `analyses.R` to run all the analyses performed in the manuscript.
 
     You can run multiple models automatically using a set of `for` loops. For example:
@@ -74,12 +74,12 @@ Clone or download this repository and follow one of the two workflows below.
 
     Note that the `expr` parameter in `compile_mdl_data()` takes a **formula** for the global-scale analyses and a **character string** for the local-scale analyses.
 
-    A list of the different models ran in the manuscript can be found [below](@sec-models).
+    A list of the different models ran in the manuscript can be found below.
 
 @. Run `results.R` to plot model estimates and get model statistics.
 @. Run `diagnosis.R` to perform model diagnostics.
 
-### Models {#sec-models}
+### Models
 
 * Global-scale analyses:
   + main models: `~dtr`, `~ts`, `~past_dmat`
@@ -154,7 +154,7 @@ Climate data are already provided in the `trs.csv` data set.
 If you would like to perform GIS analyses again, proceed as follows:
 
 @. Open `TRS.Rproj` and execute the following function in the console: `setup_gis()`. The function will create all the required directories to store SRTM and climate-related data.
-@. Download [bioclim](https://chelsa-climate.org/downloads/) and [digital elevation](https://earthexplorer.usgs.gov) data (as `.tif`) as well as [PaleoView](https://github.com/GlobalEcologyLab/PaleoView/releases) (v. `r VERSION_PALEOVIEW`). See [here](#paleoview) for instructions to generate past climate data.
+@. Download [bioclim](https://chelsa-climate.org/downloads/) and [digital elevation](https://earthexplorer.usgs.gov) data (as `.tif`) as well as [PaleoView](https://github.com/GlobalEcologyLab/PaleoView/releases) (v. `r VERSION_PALEOVIEW`). See the *generating past climate data* section for instructions to generate past climate data.
 @. Save each file in the appropriate folder (see file tree below).
 @. Once all the files are in their respective folders, use the `gis.R` script to extract present and past climate data in each location. Output data will be stored in the `gis/clim/extracted/` subfolders.
 
@@ -217,8 +217,6 @@ gis
     ├── Venezuelan Andes
     └── Wind River Mountains
 ```
-
-<a name="paleoview" />
 
 ### Generating past climate data
 

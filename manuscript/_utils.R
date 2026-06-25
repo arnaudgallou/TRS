@@ -1,5 +1,3 @@
-label_facets <- partial(egg::tag_facet, open = "", close = "")
-
 format_thousands <- partial(format, big.mark = ",")
 
 get_n_data <- function(x) {
@@ -242,8 +240,8 @@ make_conceptual_fig <- function(concept = c("trs", "gilchrist"), label_size = 10
     ylab("Elevation (m)") +
     theme(
       panel.grid.major.y = element_line(size = .3, color = "gray90"),
-      axis.title.y.left = element_text(margin = margin(0, 10, 0, 0)),
-      axis.title.y.right = element_text(margin = margin(0, 0, 0, 10)),
+      axis.title.y.left = element_text(margin = margin(r = 10)),
+      axis.title.y.right = element_text(margin = margin(l = 10)),
       axis.text.x = element_text(size = 11),
       axis.title.x = element_blank(),
       axis.ticks.y = element_blank(),

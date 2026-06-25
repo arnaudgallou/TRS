@@ -1,0 +1,175 @@
+```{r}
+#| label: stats
+
+df_stats <- ga$get_statistical_details(
+  vars = c("dtr", "ts", "dmat"),
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+  std_from = "top"
+)
+global_stats <- partial(get_regression_stats, df_stats)
+
+df_slope_summary <- la$tbl_slope_summary()
+slope_perc <- partial(get_slope_perc, df_slope_summary)
+```
+
+## Introduction
+
+There is remarkable variation in species' range sizes, from endemic species confined to single mountaintops to cosmopolitan species occurring in most habitats around the world [@brown1996]. Although variation in species distributions has been highlighted since the earliest days of ecology and biogeography [@vonhumboldt1805], the question of how range size dynamics relate to climate and geography has remained controversial [@gaston1999; @colwell2000; @mccain2009; @klinges2021; @macek2021]. Progress on this question is essential for better understanding ecological and evolutionary processes, broad-scale diversity patterns [@stevens1992; @rahbek2019] and species' extinction risks in the context of climate change [@urban2015; @staude2020].
+
+Temporal thermal variation is an extrinsic ecological factor that has often been used to explain variance in species' range sizes [@mccain2009; @morin2011; @pintor2015; @hernández-rojas2020; @liang2021; @maccagni2022]. In his seminal contribution "Why mountain passes are higher in the tropics", Janzen [@janzen1967] suggested that species experiencing large temperature fluctuations evolve broader thermal tolerances than species inhabiting ecosystems with relatively constant temperatures ([@fig-conceptual]a). Stevens [@stevens1992; @stevens1989] used this argument to explain observations that species' geographical ranges increase towards high latitudes or elevations (known as Rapoport Rule) [@rapoport1982]. He hypothesized that the broader thermal tolerance of species inhabiting thermally variable environments allows these species to survive in a broader range of latitudes and elevations ([@fig-conceptual]b; hereafter "Stevens' hypothesis").
+
+While a direct link between species' thermal tolerances, temperature variability and occupied geographic ranges is appealing, Stevens' hypothesis misses a key point. Stevens' hypothesis neglects lethal temperatures as a limit for any given species' range size and that temperature variability differs between locations. For example, a location with mean temperature of +5°C on a mountain with high thermal variability may experience temperatures from -5°C to +15°C during the year or day ([@fig-conceptual]c). At that location, a species with a lethal lower temperature limit of 0°C and upper limit of 20°C will thus experience lethally cold temperatures frequently. Lower down, a similarly variable location with mean +20°C will vary from +10°C to +30°C annually or daily. There, that same species will experience lethally high temperatures. The range of elevations in which the species does not experience lethal temperatures in this thermally variable mountain is smaller than in an equivalent, more thermally constant mountain ([@fig-conceptual]c). Thus, greater temperature variability is a mechanism that will tend to reduce species' elevation ranges. This counteracts the expectation of Stevens' hypothesis ([@fig-conceptual]b) that larger-ranged species are expected to be found in climatically more variable mountain systems. It leads us to propose that the opposite pattern may instead be found ([@fig-conceptual]d). We call this the "temperature range squeeze" hypothesis. The squeeze of species' range sizes might not necessarily be symmetrical (as Fig. 1c suggests) or determined only by temperatures. Temperature variation could, for example, have a stronger influence toward the colder end (higher elevations) than towards the warmer end (lower elevations) of species' ranges, which may be codetermined by other factors such as competition. The underlying mechanisms behind the two hypotheses also highlight a key difference between the evolutionary-focused Stevens' hypothesis and the temperature range squeeze hypothesis that assumes no dependencies between thermal tolerance and temperature variation but where range sizes are determined by abiotic filtering. The pattern predicted by the temperature range squeeze hypothesis may be dampened by the larger thermal tolerances of species in more variable environments proposed by Janzen [@janzen1967] or by avoidance strategies such as dormancy, but would not be reversed unless the increase in tolerance over-compensates for the range squeeze.
+
+Here we assess the contrasting predictions of how range size scales with temperature variability (herein we use this term for temporal thermal variability) using a global dataset of more than `{r} data_info$n_data` elevation range size estimates for vascular plants in `{r} data_info$n_locations` mountains (`{r} data_info$n_continents` continental and `{r} data_info$n_islands` island mountains; Supplementary Figure 1). Each range size estimate is the difference between the maximum and minimum species' elevations in a given mountain (see Methods and Supplementary Table 1 for details). 'Mountains' are defined as mountainous areas, regions or countries, mountain ranges or volcanoes with an elevation span ≥ `{r} ELEV_SPANS[1]` m. We used diurnal and seasonal temperature variations (mean diurnal range of temperatures averaged over one year and standard deviation of the monthly mean temperatures, respectively) as the main predictors of species' range sizes, as originally suggested by Stevens [@stevens1989]. Very few studies have tested Stevens' predictions at a temporal scale other than among-season variations. Using multiple temporal scales to investigate the relationship between temperature variability and species' range sizes is judicious because the frequency at which species experience high variation in temperature are likely to lead to different responses among species. For instance, many plant species inhabiting temperate climates are able to escape cold temperatures via dormancy. The effective temperature range experienced by such species should then be smaller than that of the full range of temperature actually occurring during the year. On the contrary, species growing in habitats where temperatures vary greatly during the day have no choice but to cope with the full range of temperature experienced in their vicinity. Plant responses to temperature variation could then be expected to be stronger as the temporal scale shortens. Because most plants are perennial and experience similar diurnal and seasonal temperatures during their lifespan (within-generation variation) [@gilchrist1995], we also tested the influence of temperature variation in the last 2000 years (from 0 to 1980 AD; ∆MAT~0-1980~) on species' range sizes (among-generation variation) [@gilchrist1995]. Most previous studies tested the relationship of plant species' elevation ranges with thermal variation along single mountain gradients, which makes the decoupling of climatic and geographic factors difficult. These limitations are best addressed with global-scale analyses and multiple elevation gradients: our core analysis. In addition, for direct comparability with Stevens' original hypothesis and previous studies, we tested the response of species' elevation ranges along each elevation gradient.
+
+```{r}
+#| label: fig-conceptual
+#| fig-height: 4
+#| fig-width: 9.3
+#| fig-cap: "**Illustration of Stevens' hypothesis and the temperature range squeeze hypothesis.** Based on the assumption that species have larger thermal tolerances in climatically variable habitats than in less climatically variable ones (**a**), Stevens predicted a positive relationship between species’ range sizes and temperature variability (**b**). Panel **c** represents the spatio-temporal temperature variation in mountains with different levels of temperature fluctuation as explained in the temperature range squeeze hypothesis. For simplicity, we used a constant lapse rate of 0.5°C. Shaded areas represent tolerable (blue) and lethal (red) temperatures for a species' thermal tolerance spanning from 0°C to 20°C. The widths of the shaded areas represent temperature variability over time (∆T) while the spatial variation in temperatures is described by the vertical axes. Thick blue and red lines indicate the 0°C and 20°C isotherms, respectively. The suitable habitat, which corresponds to species' maximum theoretical elevation range in the absence of avoidance strategies such as dormancy, is defined by elevations in which the species does not encounter a limiting temperature (i.e. below 0°C or above 20°C) at any time of the given time scale. The elevation span of the suitable habitat is expected to shrink as thermal variability increases (**c**, compare mountains 1 and 2). Thus, a negative relationship between species' range sizes and thermal variation is expected (**d**)."
+
+theme_update(
+  axis.title = element_text(size = 12),
+  axis.text = element_text(size = 12)
+)
+
+# ---- Stevens hypothesis ----
+
+SH_base <- ggplot() + geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1))
+
+# Thermal tolerance-thermal variation rel.
+
+A <- SH_base +
+  tag("a", "topleft", size = size$tag) +
+  lims(x = c(0, 1), y = c(0, 1)) +
+  labs(
+    x = "Temperature variation",
+    y = "Thermal tolerance"
+  ) +
+  theme(
+    axis.title.x.bottom = element_text(margin = margin(t = 5)),
+    axis.ticks = element_blank(),
+    axis.text = element_blank()
+  )
+
+# Species' range-thermal variation rel.
+
+B <- SH_base +
+  tag("b", "topleft", size = size$tag) +
+  ylab("Species' range size") +
+  scale_x_continuous(
+    breaks = .5,
+    labels = "Temperature variation"
+  ) +
+  theme(
+    axis.ticks = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x.bottom = element_text(margin = margin(t = 5)),
+    axis.title.x = element_blank()
+  )
+
+# ---- TRS hypothesis ----
+
+# Conceptual fig.
+
+C <- make_conceptual_fig("trs", label_size = 11 / .pt) +
+  theme(axis.text.x = element_text(size = 12)) +
+  tag("c", "topleft", size = size$tag)
+
+# Species' range-thermal variation rel.
+
+D <- ggplot() +
+  geom_segment(aes(x = 0, xend = 1, y = 1, yend = 0)) +
+  tag("d", "topright", size = size$tag) +
+  lims(x = c(0, 1), y = c(0, 1)) +
+  labs(
+    x = "Temperature variation",
+    y = "Species' range size"
+  ) +
+  theme(
+    axis.title.x.bottom = element_text(margin = margin(t = 5)),
+    axis.ticks = element_blank(),
+    axis.text = element_blank()
+  )
+
+# ---- make fig. ----
+
+layout <- "
+  A#CC#D
+  B#CC##
+"
+patchwork::wrap_plots(A, B, C, D, design = layout) +
+  patchwork::plot_layout(widths = rep(c(1, .1, 1), 2))
+
+theme_update(
+  axis.title = element_text(size = 10),
+  axis.text = element_text(size = 10)
+)
+```
+
+## Results and Discussion
+
+We asked how diurnal temperature range, temperature seasonality, and ∆MAT~0-1980~ predict the elevation ranges of vascular plants averaged within mountains across elevation gradients (global-scale analyses). Diverging conclusions in previous studies that investigated the relationship between temperature variability and species' range sizes have been attributed to methodological issues, such as sampling effort [@mccain2010], geometric constraints [@colwell2000; @macek2021] and analytical methods [@chan2016; @field2018]. To minimize the influence of these factors, we standardized the length of each elevation gradient to `{r} ELEV_SPAN_DEFAULT` m and discarded species found exclusively in the upper and lower `{r} EXCL_DEFAULT` m (exclusion zones; see Methods and Supplementary materials for details and justifications). We ran parallel analyses using standardized gradient lengths of `{r} enumerate(ELEV_SPANS[1:2])` m and exclusion zones of `{r} enumerate(EXCLS[c(1, 3)])` m, which did not influence the main results (see Supplementary materials for results using different data constraints).
+
+```{r}
+#| label: fig-regressions_main
+#| fig-cap: !expr glue("**Relationships between thermal variability and mean species' elevation ranges.** Diurnal temperature range (**a**), temperature seasonality (**b**) and the variation of mean annual temperature from 0 to 1980 AD (**c**). Points represent the estimated mean elevation ranges with their respective standard error in each of the {data_info$n_locations_global} standardized elevation gradients with length ≥ {ELEV_SPAN_DEFAULT} m. Thick blue lines are the posterior mean calculated from {N_DRAWS} random draws sampled from the {CI_DEFAULT * 100}% credible interval (thin blue lines). Colored dots indicate island (white) and continental (dark gray) mountains. Source data are provided as a Source Data file.")
+
+ga$regressions(
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+  labels = labels,
+) +
+  facet_tags() +
+  theme(
+    strip.text.x = element_text(size = 10),
+    axis.text = element_text(size = 9)
+  )
+```
+
+Species' elevation range declined with all measures of temperature variability used in the study (@fig-regressions_main), contradicting Stevens' hypothesis and supporting the temperature range squeeze hypothesis. In addition, models using temperature variability alone performed better than models including interactions with annual precipitation and mean annual temperature (Supplementary Table 2), suggesting that additional climatic variables did not increase the predictive ability of the model. A higher probability for species to encounter limiting temperatures sooner as they move away from their optimum habitat likely explains the reduced elevation range sizes observed in thermally variable mountains. The influence of extreme temperatures could be accentuated by small population sizes and gene swamping towards species' range ends which may limit the capacity of such populations to adapt to thermal extremes [@sexton2009; @sheth2020].
+
+Among thermal predictors, diurnal temperature range was the most predictive (lowest WAIC and LOO; Supplementary Table 2) and had the strongest and least uncertain relationship to species' range size ($P(\beta < 0) = `{r} global_stats("dtr", "p_beta")`$, $R^2:`{r} global_stats("dtr", "r2")`$), followed by temperature seasonality ($P(\beta < 0) ≈ `{r} global_stats("ts", "p_beta")`$, $R^2:`{r} global_stats("ts", "r2")`$) and ∆MAT~0-1980~ ($P(\beta < 0) ≈ `{r} global_stats("past_dmat", "p_beta")`$, $R^2:`{r} global_stats("past_dmat", "r2")`$; @fig-regressions_main, Supplementary Figure 7 & Supplementary Table 3). The strong relationship of species' range size to diurnal temperature range suggests that short-term temperature variation is more important in determining species range sizes than previously thought. Longer-term variables such as temperature seasonality might be less relevant than expected due to the ability of plant species inhabiting seasonal climates to avoid long periods of unfavorable temperatures via dormancy. As a consequence, the relative range of temperatures effectively experienced by extratropical species may be lower than the estimated seasonal variability. The narrowing of sessile species' elevation ranges may be exacerbated in mountains with high diurnal temperature variation because they cannot escape extreme temperatures over such short time-scales. A decline in species' elevation ranges in response to high diurnal temperature range has also been reported in terrestrial vertebrates [@chan2016], suggesting a general pattern. Chan et al. [@chan2016] used a simulation by Gilchrist [@gilchrist1995] to explain the negative relationship via evolutionary selection by diurnal temperature fluctuation for narrow thermal tolerance. Gilchrist's simulation assumes survival of all individuals under any circumstances and variability in range size is merely linked to how reproductive success is related to performance breadth [@gilchrist1995]. Predictions are thus only realistic if species survive unsuitable temperatures (e.g. via dormant stages). If this assumption is not met, species with small elevation ranges need broad thermal tolerance in order to survive the extremes of short-term temperature fluctuation (Supplementary Figure 10). Gilchrist's hypothesis predicts that performance breadth increases when high among- and low within-generation variation occur at the same time, while the combination of low within- and among-generation variation would lead to smaller performance breadth and consecutively to smaller range sizes. Exploring our data further to assess the influence of these interactions did not show support for Gilchrist's hypothesis (Supplementary Figure 11-12).
+
+Island diversity differs from mainlands as a result of isolation-driven immigration, extinction and speciation processes [@flantua2020], which could influence species' range sizes differently. Comparing species' range sizes in island and continental mountains revealed broader mean species' range sizes on islands (@fig-regressions_main). However, diurnal temperature range was the only tested variable to account for variation in species' range sizes between island and continental mountains. Island mountains were characterized by both lower diurnal temperature range and broader mean elevation range sizes than continental mountains (@fig-regressions_land_type). Lower diurnal temperature variation in island mountains likely results from a buffering effect of the ocean on air temperature that would make the climate less temporally variable [@shen2021; @weigelt2013]. The strength and continuity in the diurnal temperature range-species' range size relationship, with a negative trend being visible in both island and continental mountains ([@fig-regressions_land_type]A), suggest that short-term temperature variation plays a major role in driving the observed range-size pattern that cannot be imputed to island-specific factors (e.g. lower competition). The temperature range squeeze hypothesis thus offers a unifying explanation for elevation range sizes on continents and islands at a global scale.
+
+```{r}
+#| label: fig-regressions_land_type
+#| fig-cap: !expr glue("**Relationships between thermal variability and mean species' elevation ranges in island and continental mountains.** Diurnal temperature range (**a**), temperature seasonality (**b**) and the variation of mean annual temperature from 0 to 1980 AD (**c**). Points represent the estimated mean elevation ranges with their respective standard error in each of the {data_info$n_locations_global} standardized elevation gradients with length ≥ {ELEV_SPAN_DEFAULT} m. Colors indicate island (white dots, blue regressions) and continental (dark gray dots, orange regressions) mountains. Source data are provided as a Source Data file.")
+
+ga$regressions(
+  elev_span = ELEV_SPAN_DEFAULT,
+  excl_zone = EXCL_DEFAULT,
+  by_land_type = TRUE,
+  labels = labels,
+) +
+  facet_tags() +
+  theme(
+    strip.text.x = element_text(size = 10),
+    axis.text = element_text(size = 9)
+  )
+```
+
+We also assessed the relationship between temperature variation and species' elevation range within each individual mountain (local-scale analyses) using diurnal temperature range and temperature seasonality. We did not test the influence ∆MAT~0-1980~ on species' elevation range for the local-scale analyses because of the low spatial resolution of the past climate data. Because each mountain gradient was tested independently, we did not standardize elevation gradients. For the same reasons mentioned in the global-scale analyses, we used exclusion zones of 250 m and we ran parallel analyses using exclusion zones of `{r} enumerate(EXCLS[c(1, 3)])` m (see Supplementary materials for results using different data constraints).
+
+```{r}
+#| label: fig-histogram_slopes
+#| fig-height: 2.3
+#| fig-width: 4.6
+#| fig-cap: !expr glue("**Results from the local-scale analyses.** Responses of species' elevation ranges to diurnal temperature range (**a**) and temperature seasonality (**b**) within each of the {data_info$n_locations} mountains used in the study. Histograms are of mean slope terms divided by their standard deviation from the {CI_DEFAULT * 100}% credible interval for the local-scale analyses. Colors indicate whether the {CI_DEFAULT * 100}% credible interval includes 0 (light blue) or not (dark blue). Dashed lines indicate 0. Source data are provided as a Source Data file.")
+
+la$slope_histograms(excl_zone = 250) +
+  facet_tags(size = 9 / .pt) +
+  theme(
+    strip.text = element_blank(),
+    axis.title = element_text(size = 8.5),
+    axis.text = element_text(size = 8),
+  )
+```
+
+Results from the local-scale analyses were less conclusive than the analyses at a global scale, with about as many mountains featuring negative as positive influence of diurnal temperature range (`{r} slope_perc("dtr", "+")`% positive vs `{r} slope_perc("dtr", "-")`% negative, including `{r} slope_perc("dtr", "+", "low")`% positive vs `{r} slope_perc("dtr", "-", "low")`% negative with low uncertainties) or temperature seasonality (`{r} slope_perc("ts", "+")`% positive vs `{r} slope_perc("ts", "-")`% negative, including `{r} slope_perc("ts", "+", "low")`% positive vs `{r} slope_perc("ts", "-", "low")`% negative with low uncertainties) on species' elevation ranges (@fig-histogram_slopes, Supplementary Table 4). The lack of a clear trend in the direction of the estimates for all elevation gradients suggests that, at a local scale, temperature variability might not be the dominant driver of species' elevation ranges, or has different influences depending on plant community composition. Our results thus potentially explain ambiguous conclusions from previous studies on the role of thermal variation in shaping species' elevation ranges along individual mountain gradients. The small variation in our data on diurnal and seasonal temperature range within single mountain gradients compared to the variations across mountains could explain the weak influence of thermal variability in driving species' elevation ranges locally (@fig-histogram_slopes, Supplementary Figure 13). This could be exacerbated in the local-scale analyses by the resolution of the climate data that might hide spatial heterogeneity in temperature variation along single elevation gradients [@maclean2023]. Additionally, species' ranges are likely to be co-determined by multiple factors that are mountain-dependent, such as human disturbances, soil type, water availability, dispersal abilities, ecological history, microgeography or interspecific interactions [@klinges2021; @mccain2010; @sexton2009; @sheth2020; @chauvier2021; @lynn2019; @whitman2021; @lembrechts2017; @lynn2021].
+
+The ratio of positive and negative relationships between species' range sizes and temperature variation remained essentially the same, independent of the size of exclusion zones (Supplementary Figure 14, Supplementary Table 4). However, the number of slopes with low uncertainties decreased drastically with increasing exclusion zone sizes (Supplementary Figure 14, Supplementary Table 4), suggesting that species found exclusively at the domain boundaries strongly influence the strength of the pattern within mountains and that the narrowing of species' range sizes at domain boundaries greatly influence the probability of finding statistically significant relationships. Species exclusively inhabiting lower and higher elevations had less influence in the global-scale analyses, where results remain consistent, independent of the size of the exclusion zone.
+
+In summary, our findings solidify the temperature range squeeze hypothesis ([@fig-conceptual]c-d) that predicts a decline in species' range sizes in climatically variable habitats, thereby contradicting Stevens' hypothesis [@stevens1989] ([@fig-conceptual]b). Our study reveals that the variation in diurnal temperatures might play a determining role in shaping the elevation ranges of vascular plants on a global scale and contributes to the differences in range sizes observed between continents and islands. Local (within-mountain) variation in species' elevation ranges, however, is largely decoupled from temperature variability and could be the result of local, interacting variables, such as species interactions, land use, microclimatic variations and soil type, among others. The detected global signal of the role of variation in diurnal temperature in shaping elevation ranges urges the need to reconsider past theories on our understanding of the driver of plant species distributions. Especially for the field of conservation biology in the face of global change, these novel insights are relevant to take into account. Our findings call into question the prevailing understanding that global changes will especially imperil tropical species with restricted ranges [@laurance2011]. We suggest that extinction risk may be higher in continental mountains where species are more likely to have smaller elevation ranges due to higher thermal variability than species inhabiting mountain systems exposed to oceanic climates. Short-term temperature variation may also become increasingly important in driving local extinction risks but a large variation of local variables will need to be considered. Considering our findings, the temperature range squeeze hypothesis holds true on a global scale, shedding light on the determining influence of diurnal temperature variation on species' elevation ranges and emphasizing the need for adaptive conservation measures in the context of a rapidly changing climate.

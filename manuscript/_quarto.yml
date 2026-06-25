@@ -1,0 +1,42 @@
+project:
+  type: manuscript
+  output-dir: _output/manuscript
+  pre-render:
+    - cp -R ../.Rprofile .
+  post-render:
+    - rm -rf _output/manuscript/_tex/references .Rprofile
+
+manuscript:
+ article: manuscript.qmd
+
+title: "Diurnal temperature range as a key predictor of plants' elevation ranges globally"
+
+format:
+  pdf:
+    fig-format: pdf
+    fontsize: 10pt
+    linestretch: 1.5
+    mainfont: Roboto
+    mainfontoptions: Weight=200
+    mathfont: STIX Two Math
+    fig-height: 2.8
+    fig-width: 7
+    include-in-header: styles.tex
+
+notebook-links: false
+
+execute:
+  echo: false
+  warning: false
+
+crossref:
+  fig-title: Fig.
+  fig-prefix: Fig.
+
+csl: _csl/nature.csl
+
+knitr:
+  opts_chunk:
+    dev: cairo_pdf
+
+lang: en

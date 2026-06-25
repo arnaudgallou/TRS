@@ -1,0 +1,15 @@
+project:
+  output-dir: _output/appendix
+  post-render: rm -rf _output/appendix/_tex
+
+manuscript:
+  article: appendix.qmd
+
+title: Supplementary Information
+
+crossref:
+  fig-title: Supplementary Figure
+  tbl-title: Supplementary Table
+  ref-hyperlink: false
+
+csl: _csl/trends-in-ecology-and-evolution.csl

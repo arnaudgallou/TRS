@@ -1,9 +1,9 @@
 
 
 > \[!NOTE\]  
-> This project was updated to improve reproducibility. The versions of R
-> and R packages may differ from those used in the original paper, but
-> they do not affect the results.
+> This project was updated in 2026 to improve reproducibility. The
+> versions of R and R packages may differ from those used in the
+> original paper, but they do not affect the results.
 
 ## Description
 

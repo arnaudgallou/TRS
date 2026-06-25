@@ -26,8 +26,7 @@ proceed to the next section. Otherwise, follow the steps below:
 
 ## Usage
 
-Clone or download this repository and follow one of the two workflows
-below.
+Clone or download this repository and follow the steps below:
 
 1.  Download the data at https://osf.io/d42jq.
 

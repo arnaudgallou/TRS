@@ -24,7 +24,7 @@ This project uses R 4.4.1. If you're already using R 4.4.1, you can proceed to t
 
 ## Usage
 
-Clone or download this repository and follow one of the two workflows below.
+Clone or download this repository and follow the steps below:
 
 @. Download the data at https://osf.io/d42jq.
 @. Save the datasets below `data/`.
